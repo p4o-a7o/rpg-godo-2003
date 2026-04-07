@@ -57,7 +57,9 @@
 #include <lcf/rpg/save.h>
 #include "scene_gameover.h"
 #include "multiplayer/game_multiplayer.h"
+#ifdef EMSCRIPTEN
 #include <emscripten/emscripten.h>
+#endif
 #include "feature.h"
 
 namespace {
@@ -217,8 +219,8 @@ void Game_Map::Setup(std::unique_ptr<lcf::rpg::Map> map_in) {
 	Main_Data::game_player->UpdateSaveCounts(lcf::Data::system.save_count, GetMapSaveCount());
 
 	//multiplayer setup
-	Output::Debug("MP: map setup id={}", GetMapId());
-	GMI().Connect(GetMapId(), true);
+	// Output::Debug("MP: map setup id={}", GetMapId());
+	// GMI().Connect(GetMapId(), true);
 }
 
 void Game_Map::SetupFromSave(
@@ -330,8 +332,8 @@ void Game_Map::SetupFromSave(
 	Game_Map::Parallax::ChangeBG(GetParallaxParams());
 
 	//multiplayer setup
-	Output::Debug("MP: map setup from save id={}", GetMapId());
-	GMI().Connect(GetMapId());
+	// Output::Debug("MP: map setup from save id={}", GetMapId());
+	// GMI().Connect(GetMapId());
 }
 
 std::unique_ptr<lcf::rpg::Map> Game_Map::LoadMapFile(int map_id, bool map_changed) {
@@ -375,11 +377,13 @@ std::unique_ptr<lcf::rpg::Map> Game_Map::LoadMapFile(int map_id, bool map_change
 
 	Output::Debug("Loaded Map {}", map_name);
 
+#ifdef EMSCRIPTEN
 	if (map_changed) {
 		EM_ASM({
 			onLoadMap(UTF8ToString($0));
 		}, map_name.c_str());
 	}
+#endif
 
 	if (map.get() == NULL) {
 		Output::ErrorStr(lcf::LcfReader::GetError());

@@ -1,0 +1,26 @@
+#ifndef EP_PLATFORM_GODOT_AUDIO_H
+#define EP_PLATFORM_GODOT_AUDIO_H
+
+#include "audio_generic.h"
+
+#include <mutex>
+#include <vector>
+#include <cstdint>
+
+class GodotAudio final : public GenericAudio {
+public:
+	static constexpr int SAMPLE_RATE = 44100;
+
+	explicit GodotAudio(const Game_ConfigAudio& cfg);
+	~GodotAudio() override = default;
+
+	std::vector<int16_t> PullFrames(int frame_count);
+
+	void LockMutex()   const override;
+	void UnlockMutex() const override;
+
+private:
+	mutable std::mutex mutex_;
+};
+
+#endif // EP_PLATFORM_GODOT_AUDIO_H

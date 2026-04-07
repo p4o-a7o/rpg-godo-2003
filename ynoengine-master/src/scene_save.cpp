@@ -127,10 +127,7 @@ bool Scene_Save::Save(std::ostream& os, int slot_id, bool prepare_save) {
 	Game_Map::PrepareSave(save);
 
 	if (prepare_save) {
-		// When a translation is loaded always store in Unicode to prevent data loss
-		int codepage = Tr::HasActiveTranslation() ? 65001 : 0;
-
-		lcf::LSD_Reader::PrepareSave(save, PLAYER_SAVEGAME_VERSION, codepage);
+		lcf::LSD_Reader::PrepareSave(save, PLAYER_SAVEGAME_VERSION, 65001);
 		Main_Data::game_system->IncSaveCount();
 	}
 

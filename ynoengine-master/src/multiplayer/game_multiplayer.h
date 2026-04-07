@@ -3,12 +3,14 @@
 
 #include <string>
 #include <bitset>
+#include <functional>
 #include <unordered_set>
 #include "../string_view.h"
 #include "../game_pictures.h"
 #include "../tone.h"
 #include <lcf/rpg/sound.h>
 #include "yno_connection.h"
+#include "mp_callbacks.h"
 
 class PlayerOther;
 
@@ -123,8 +125,40 @@ public:
 	int cu_precipitation;
 
 	void SpawnOtherPlayer(int id);
+
 	void ResetRepeatingFlash();
+
 	void InitConnection();
+
+	void GodotMpAddPlayer(int id, int x, int y,
+	                      const std::string& sprite_name, int sprite_index,
+	                      int facing, int speed);
+
+	void GodotMpRemovePlayer(int id);
+
+	void GodotMpMovePlayer(int id, int x, int y);
+
+	void GodotMpSetFacing(int id, int facing);
+
+	void GodotMpSetSpeed(int id, int speed);
+
+	void GodotMpSetSprite(int id, const std::string& name, int index);
+
+	void GodotMpSetTransparency(int id, int transparency);
+
+	void GodotMpSetHidden(int id, bool hidden);
+
+	void GodotMpFlash(int id, int r, int g, int b, int power, int frames);
+
+	void GodotMpSetPlayerName(int id, const std::string& name);
+
+	void GodotMpSetPlayerSystemGraphic(int id, const std::string& sys_name);
+
+	void GodotMpPlaySe(const std::string& name, int volume, int tempo, int balance);
+
+	void GodotFireLocalPlayerCallbacks();
+
+	MpCallbacks mp_callbacks;
 };
 
 inline Game_Multiplayer& GMI() { return Game_Multiplayer::Instance(); }

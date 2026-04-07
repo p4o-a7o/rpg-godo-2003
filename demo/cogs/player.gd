@@ -1,0 +1,47 @@
+extends RPGMakerPlayer
+
+@export var texture_rect: TextureRect
+@export var game_sub_viewport: SubViewport
+
+## Note that _process and _ready functions
+## were defined inside gdextension and will
+## not work here
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventKey:
+		var key_event := event as InputEventKey
+		var easyrpg_key := _godot_key_to_easyrpg(key_event.keycode)
+		if easyrpg_key >= 0:
+			inject_key(easyrpg_key, key_event.pressed)
+
+# gotta add proper control remap menu later
+func _godot_key_to_easyrpg(keycode: Key) -> int:
+	match keycode:
+		KEY_UP:     return 13
+		KEY_DOWN:   return 15
+		KEY_LEFT:   return 12
+		KEY_RIGHT:  return 14
+		KEY_Z:      return 63
+		KEY_X:      return 61
+		KEY_ENTER:  return 4
+		KEY_SPACE:  return 7
+		KEY_ESCAPE: return 6
+		KEY_SHIFT:  return 20
+		KEY_F1:     return 93
+		KEY_1:      return 68
+		KEY_2:      return 69
+		KEY_3:      return 70
+		KEY_4:      return 71
+		KEY_5:      return 72
+		KEY_6:      return 73
+		KEY_7:      return 74
+		KEY_8:      return 75
+		KEY_9:      return 76
+		KEY_0:      return 67
+		KEY_MINUS:  return 102
+		KEY_EQUAL:  return 103
+		_:          return -1
+
+func _on_resolution_changed(width: int, height: int) -> void:
+	game_sub_viewport.size = Vector2i(width, height)
+	texture_rect.texture = self.get_frame_texture()

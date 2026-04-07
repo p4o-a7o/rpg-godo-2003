@@ -595,8 +595,8 @@ elseif(NINTENDO_WIIU)
 elseif(AMIGA)
 	set(PLAYER_TARGET_PLATFORM "SDL1" CACHE STRING "Platform to compile for.")
 else()
-	set(PLAYER_TARGET_PLATFORM "SDL2" CACHE STRING "Platform to compile for. Options: SDL3 SDL2 SDL1 libretro")
-	set_property(CACHE PLAYER_TARGET_PLATFORM PROPERTY STRINGS SDL3 SDL2 SDL1 libretro)
+	set(PLAYER_TARGET_PLATFORM "SDL2" CACHE STRING "Platform to compile for. Options: SDL3 SDL2 SDL1 libretro godot")
+	set_property(CACHE PLAYER_TARGET_PLATFORM PROPERTY STRINGS SDL3 SDL2 SDL1 libretro godot)
 endif()
 set(PLAYER_BUILD_EXECUTABLE ON)
 set(PLAYER_TEST_LIBRARIES ${PROJECT_NAME})
@@ -744,6 +744,19 @@ elseif(PLAYER_TARGET_PLATFORM STREQUAL "switch")
 		src/platform/switch/ui.cpp
 		src/platform/switch/ui.h)
 	target_link_libraries(${PROJECT_NAME} switch-assets)
+elseif(PLAYER_TARGET_PLATFORM STREQUAL "godot")
+	# Godot GDExtension platform — no SDL, no window, no executable.
+	# GodotUi sources are added here directly.
+	target_compile_definitions(${PROJECT_NAME} PUBLIC
+		PLAYER_UI=GodotUi
+		PLAYER_TARGET_GODOT=1
+	)
+	target_sources(${PROJECT_NAME} PRIVATE
+		src/platform/godot/ui.cpp
+		src/platform/godot/ui.h
+		src/platform/godot/audio.h
+	)
+	set(PLAYER_BUILD_EXECUTABLE OFF)
 else()
 	message(FATAL_ERROR "Invalid target platform")
 endif()
@@ -1464,6 +1477,12 @@ else() # library
 		set_target_properties(easyrpg_android PROPERTIES DEBUG_POSTFIX "")
 		add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/builds/android/app/src/gamebrowser)
 		set(PLAYER_TEST_LIBRARIES "easyrpg_android")
+	elseif(PLAYER_TARGET_PLATFORM STREQUAL "godot")
+		# Godot GDExtension: the library target (easyrpg_godot) is created by
+		# the parent CMakeLists.txt (proj/CMakeLists.txt).
+		# Here we just need to avoid the FATAL_ERROR.
+		# The EasyRPG_Player OBJECT library is linked by easyrpg_godot.
+		set(PLAYER_TEST_LIBRARIES ${PROJECT_NAME})
 	else()
 		message(FATAL_ERROR "Unsupported library target platform ${PLAYER_TARGET_PLATFORM}")
 	endif()

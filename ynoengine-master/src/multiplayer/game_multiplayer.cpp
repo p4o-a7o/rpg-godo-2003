@@ -253,14 +253,15 @@ void Game_Multiplayer::InitConnection() {
 		auto& player = it->second;
 		if (player.chat_name) {
 			auto scene_map = Scene::Find(Scene::SceneType::Map);
-			if (!scene_map) {
+			if (scene_map) {
+				auto* old_list = DrawableMgr::GetLocalListPtr();
+				DrawableMgr::SetLocalList(&scene_map->GetDrawableList());
+				player.chat_name.reset();
+				DrawableMgr::SetLocalList(old_list);
+			} else {
 				Output::Error("unexpected, {}:{}", __FILE__, __LINE__);
-				//return;
+				player.chat_name.reset();
 			}
-			auto old_list = &DrawableMgr::GetLocalList();
-			DrawableMgr::SetLocalList(&scene_map->GetDrawableList());
-			player.chat_name.reset();
-			DrawableMgr::SetLocalList(old_list);
 		}
 		dc_players.emplace_back(std::move(player));
 		players.erase(it);
@@ -508,6 +509,9 @@ void Game_Multiplayer::Connect(int map_id, bool room_switch) {
 		connection.Open(get_room_url(room_id, session_token));
 	}
 	UpdateGlobalVariables();
+	// Notify Godot that the map changed.
+	if (mp_callbacks.on_map_changed)
+		mp_callbacks.on_map_changed(map_id);
 }
 
 void Game_Multiplayer::Initialize() {
@@ -564,29 +568,53 @@ void Game_Multiplayer::SendBasicData() {
 	connection.SendPacketAsync<C::HiddenPacket>(player->IsSpriteHidden());
 	auto sysn = Main_Data::game_system->GetSystemName();
 	connection.SendPacketAsync<C::SysNamePacket>(ToString(sysn));
+
+	// Fire Godot callbacks so YnoMultiplayer can send the same data
+	// over its own WebSocket connection.
+	if (mp_callbacks.on_moved)
+		mp_callbacks.on_moved(player->GetX(), player->GetY());
+	if (mp_callbacks.on_speed)
+		mp_callbacks.on_speed(player->GetMoveSpeed());
+	if (mp_callbacks.on_sprite)
+		mp_callbacks.on_sprite(player->GetSpriteName(), player->GetSpriteIndex());
+	if (mp_callbacks.on_facing)
+		mp_callbacks.on_facing(player->GetFacing());
+	if (mp_callbacks.on_hidden)
+		mp_callbacks.on_hidden(player->IsSpriteHidden());
+	if (mp_callbacks.on_system)
+		mp_callbacks.on_system(ToString(sysn));
 }
 
 void Game_Multiplayer::MainPlayerMoved(int dir) {
 	auto& p = Main_Data::game_player;
 	connection.SendPacketAsync<MainPlayerPosPacket>(p->GetX(), p->GetY());
+	if (mp_callbacks.on_moved)
+		mp_callbacks.on_moved(p->GetX(), p->GetY());
 }
 
 void Game_Multiplayer::MainPlayerFacingChanged(int dir) {
 	connection.SendPacketAsync<FacingPacket>(dir);
+	if (mp_callbacks.on_facing)
+		mp_callbacks.on_facing(dir);
 }
 
 void Game_Multiplayer::MainPlayerChangedMoveSpeed(int spd) {
 	connection.SendPacketAsync<SpeedPacket>(spd);
+	if (mp_callbacks.on_speed)
+		mp_callbacks.on_speed(spd);
 }
 
 void Game_Multiplayer::MainPlayerChangedSpriteGraphic(std::string name, int index) {
 	connection.SendPacketAsync<SpritePacket>(name, index);
 	Web_API::OnPlayerSpriteUpdated(name, index);
+	if (mp_callbacks.on_sprite)
+		mp_callbacks.on_sprite(name, index);
 }
 
 void Game_Multiplayer::MainPlayerJumped(int x, int y) {
-	auto& p = Main_Data::game_player;
 	connection.SendPacketAsync<JumpPacket>(x, y);
+	if (mp_callbacks.on_jumped)
+		mp_callbacks.on_jumped(x, y);
 }
 
 void Game_Multiplayer::MainPlayerFlashed(int r, int g, int b, int p, int f) {
@@ -603,20 +631,34 @@ void Game_Multiplayer::MainPlayerFlashed(int r, int g, int b, int p, int f) {
 		last_frame_flash.reset();
 	}
 	last_flash_frame_index = frame_index;
+	if (mp_callbacks.on_flash)
+		mp_callbacks.on_flash(r, g, b, p, f);
 }
 
 void Game_Multiplayer::MainPlayerChangedTransparency(int transparency) {
 	connection.SendPacketAsync<TransparencyPacket>(transparency);
+	if (mp_callbacks.on_transparency)
+		mp_callbacks.on_transparency(transparency);
 }
 
 void Game_Multiplayer::MainPlayerChangedSpriteHidden(bool hidden) {
 	int hidden_bin = hidden ? 1 : 0;
 	connection.SendPacketAsync<HiddenPacket>(hidden_bin);
+	if (mp_callbacks.on_hidden)
+		mp_callbacks.on_hidden(hidden);
 }
 
 void Game_Multiplayer::MainPlayerTeleported(int map_id, int x, int y) {
 	connection.SendPacketAsync<TeleportPacket>(x, y);
 	Web_API::OnPlayerTeleported(map_id, x, y);
+	if (mp_callbacks.on_teleported)
+		mp_callbacks.on_teleported(map_id, x, y);
+
+	if (map_id != room_id) {
+		room_id = map_id;
+		if (mp_callbacks.on_map_changed)
+			mp_callbacks.on_map_changed(map_id);
+	}
 }
 
 void Game_Multiplayer::MainPlayerTriggeredEvent(int event_id, bool action) {
@@ -626,10 +668,14 @@ void Game_Multiplayer::MainPlayerTriggeredEvent(int event_id, bool action) {
 	if (action) {
 		if (std::find(sync_action_events.begin(), sync_action_events.end(), event_id) != sync_action_events.end()) {
 			sep(1);
+			if (mp_callbacks.on_event_triggered)
+				mp_callbacks.on_event_triggered(event_id, true);
 		}
 	} else {
 		if (std::find(sync_events.begin(), sync_events.end(), event_id) != sync_events.end()) {
 			sep(0);
+			if (mp_callbacks.on_event_triggered)
+				mp_callbacks.on_event_triggered(event_id, false);
 		}
 	}
 }
@@ -637,11 +683,15 @@ void Game_Multiplayer::MainPlayerTriggeredEvent(int event_id, bool action) {
 void Game_Multiplayer::SystemGraphicChanged(std::string_view sys) {
 	connection.SendPacketAsync<SysNamePacket>(ToString(sys));
 	Web_API::OnUpdateSystemGraphic(ToString(sys));
+	if (mp_callbacks.on_system)
+		mp_callbacks.on_system(std::string(sys));
 }
 
 void Game_Multiplayer::SePlayed(const lcf::rpg::Sound& sound) {
 	if (!Main_Data::game_player->IsMenuCalling()) {
 		connection.SendPacketAsync<SEPacket>(sound);
+		if (mp_callbacks.on_se)
+			mp_callbacks.on_se(sound.name, sound.volume, sound.tempo, sound.balance);
 	}
 }
 
@@ -743,7 +793,8 @@ void Game_Multiplayer::ApplyRepeatingFlashes() {
 		if (players.find(rf.first) != players.end()) {
 			std::array<int, 5> flash_array = rf.second;
 			players[rf.first].ch->Flash(flash_array[0], flash_array[1], flash_array[2], flash_array[3], flash_array[4]);
-			players[rf.first].chat_name->SetFlashFramesLeft(flash_array[4]);
+			if (players[rf.first].chat_name)
+				players[rf.first].chat_name->SetFlashFramesLeft(flash_array[4]);
 		}
 	}
 }
@@ -751,19 +802,24 @@ void Game_Multiplayer::ApplyRepeatingFlashes() {
 void Game_Multiplayer::ApplyTone(Tone tone) {
 	for (auto& p : players) {
 		p.second.sprite->SetTone(tone);
-		p.second.chat_name->SetEffectsDirty();
+		if (p.second.chat_name)
+			p.second.chat_name->SetEffectsDirty();
 	}
 }
 
 void Game_Multiplayer::SwitchSet(int switch_id, int value_bin) {
 	if (std::find(sync_switches.begin(), sync_switches.end(), switch_id) != sync_switches.end()) {
 		connection.SendPacketAsync<Messages::C2S::SyncSwitchPacket>(switch_id, value_bin);
+		if (mp_callbacks.on_switch_set)
+			mp_callbacks.on_switch_set(switch_id, value_bin);
 	}
 }
 
 void Game_Multiplayer::VariableSet(int var_id, int value) {
 	if (std::find(sync_vars.begin(), sync_vars.end(), var_id) != sync_vars.end()) {
 		connection.SendPacketAsync<Messages::C2S::SyncVariablePacket>(var_id, value);
+		if (mp_callbacks.on_variable_set)
+			mp_callbacks.on_variable_set(var_id, value);
 	}
 }
 
@@ -773,11 +829,13 @@ void Game_Multiplayer::ApplyScreenTone() {
 
 void Game_Multiplayer::UpdateNBPlayers() {
 	if (!Player::IsCollectiveUnconscious()) return;
+	if (!Main_Data::game_variables) return;
 	Main_Data::game_variables->Set(GlobalVariables::NB_PLAYERS, players.size() + 1);
 }
 
 void Game_Multiplayer::UpdateCUTime() {
 	if (!Player::IsCollectiveUnconscious()) return;
+	if (!Main_Data::game_variables) return;
 	Main_Data::game_variables->Set(GlobalVariables::CU_HOURS, cu_time_hours);
 	Main_Data::game_variables->Set(GlobalVariables::CU_DAYS, cu_time_days);
 	Main_Data::game_variables->Set(GlobalVariables::CU_RANDINT, cu_randint);
@@ -785,6 +843,7 @@ void Game_Multiplayer::UpdateCUTime() {
 
 void Game_Multiplayer::UpdateCUWeather() {
 	if (!Player::IsCollectiveUnconscious()) return;
+	if (!Main_Data::game_variables) return;
 	Main_Data::game_variables->Set(GlobalVariables::CU_TEMPERATURE, cu_temperature);
 	Main_Data::game_variables->Set(GlobalVariables::CU_PRECIPITATION, cu_precipitation);
 }
@@ -796,6 +855,7 @@ void Game_Multiplayer::UpdateGlobalVariables() {
 }
 
 void Game_Multiplayer::UpdateServerVariables() {
+	if (!Main_Data::game_variables) return;
 	for (const auto& it : map_server_variables) {
 		Main_Data::game_variables->Set(it.first, it.second);
 	}
@@ -858,7 +918,7 @@ void Game_Multiplayer::Update() {
 			ch->Update();
 			p.second.sprite->Update();
 
-			if (check_chat_name_overlap) {
+			if (check_chat_name_overlap && p.second.chat_name) {
 				bool overlap = false;
 				int x = ch->GetX();
 				int y = ch->GetY();
@@ -912,21 +972,174 @@ void Game_Multiplayer::Update() {
 		auto old_list = &DrawableMgr::GetLocalList();
 		DrawableMgr::SetLocalList(&scene_map->GetDrawableList());
 
-		for (auto dcpi = dc_players.rbegin(); dcpi != dc_players.rend(); ++dcpi) {
-			auto& ch = dcpi->ch;
+		for (auto& dcp : dc_players) {
+			auto& ch = dcp.ch;
 			if (ch->GetBaseOpacity() > 0) {
 				ch->SetBaseOpacity(ch->GetBaseOpacity() - 1);
 				ch->SetProcessed(false);
 				ch->Update();
-				dcpi->sprite->Update();
-			} else {
-				dc_players.erase(dcpi.base() - 1);
+				dcp.sprite->Update();
 			}
 		}
+		dc_players.erase(
+			std::remove_if(dc_players.begin(), dc_players.end(),
+				[](const PlayerOther& p) { return p.ch->GetBaseOpacity() == 0; }),
+			dc_players.end()
+		);
 
 		DrawableMgr::SetLocalList(old_list);
 	}
 
 	if (session_connected)
 		connection.FlushQueue();
+}
+
+void Game_Multiplayer::GodotMpAddPlayer(
+	int id,
+	int x,
+	int y,
+	const std::string& sprite_name,
+	int sprite_index,
+	int facing,
+	int speed
+) {
+	auto scene_map = Scene::Find(Scene::SceneType::Map);
+	if (!scene_map) {
+		Output::Warning("GodotMpAddPlayer: no Map scene active — cannot spawn player id={}", id);
+		return;
+	}
+	if (players.find(id) == players.end())
+		SpawnOtherPlayer(id);
+	auto& ch = players[id].ch;
+	if (!ch) {
+		Output::Warning("GodotMpAddPlayer: ch is null after SpawnOtherPlayer for id={}", id);
+		return;
+	}
+	ch->SetX(x);
+	ch->SetY(y);
+	if (!sprite_name.empty())
+		ch->SetSpriteGraphic(sprite_name, sprite_index);
+	ch->SetFacing(facing);
+	ch->SetMoveSpeed(speed);
+	players[id].mvq.emplace_back(x, y);
+}
+
+void Game_Multiplayer::GodotMpRemovePlayer(int id) {
+	auto it = players.find(id);
+	if (it == players.end()) return;
+	auto& player = it->second;
+	if (player.chat_name) {
+		auto scene_map = Scene::Find(Scene::SceneType::Map);
+		if (scene_map) {
+			auto* old_list = DrawableMgr::GetLocalListPtr();
+			DrawableMgr::SetLocalList(&scene_map->GetDrawableList());
+			player.chat_name.reset();
+			DrawableMgr::SetLocalList(old_list);
+		} else {
+			player.chat_name.reset();
+		}
+	}
+	dc_players.emplace_back(std::move(player));
+	players.erase(it);
+	repeating_flashes.erase(id);
+	if (Main_Data::game_pictures)
+		Main_Data::game_pictures->EraseAllMultiplayerForPlayer(id);
+}
+
+void Game_Multiplayer::GodotMpMovePlayer(int id, int x, int y) {
+	if (players.find(id) == players.end()) {
+		Output::Debug("GodotMpMovePlayer: player id={} not found", id);
+		return;
+	}
+	int cx = Utils::Clamp(x, 0, Game_Map::GetTilesX() - 1);
+	int cy = Utils::Clamp(y, 0, Game_Map::GetTilesY() - 1);
+	players[id].mvq.emplace_back(cx, cy);
+	Output::Debug("GodotMpMovePlayer: id={} queued ({},{})  qsize={}", id, cx, cy, players[id].mvq.size());
+}
+
+void Game_Multiplayer::GodotMpSetFacing(int id, int facing) {
+	if (players.find(id) == players.end()) return;
+	players[id].ch->SetFacing(Utils::Clamp(facing, 0, 3));
+}
+
+void Game_Multiplayer::GodotMpSetSpeed(int id, int speed) {
+	if (players.find(id) == players.end()) return;
+	players[id].ch->SetMoveSpeed(Utils::Clamp(speed, 1, 6));
+}
+
+void Game_Multiplayer::GodotMpSetSprite(int id, const std::string& name, int index) {
+	if (players.find(id) == players.end()) return;
+	players[id].ch->SetSpriteGraphic(name, Utils::Clamp(index, 0, 7));
+}
+
+void Game_Multiplayer::GodotMpSetTransparency(int id, int transparency) {
+	if (players.find(id) == players.end()) return;
+	players[id].ch->SetTransparency(Utils::Clamp(transparency, 0, 7));
+}
+
+void Game_Multiplayer::GodotMpSetHidden(int id, bool hidden) {
+	if (players.find(id) == players.end()) return;
+	players[id].ch->SetSpriteHidden(hidden);
+}
+
+void Game_Multiplayer::GodotMpFlash(int id, int r, int g, int b, int power, int frames) {
+	if (players.find(id) == players.end()) return;
+	players[id].ch->Flash(r, g, b, power, frames);
+}
+
+void Game_Multiplayer::GodotFireLocalPlayerCallbacks() {
+	auto& player = Main_Data::game_player;
+	if (!player) return;
+	if (mp_callbacks.on_moved)
+		mp_callbacks.on_moved(player->GetX(), player->GetY());
+	if (mp_callbacks.on_speed)
+		mp_callbacks.on_speed(player->GetMoveSpeed());
+	if (mp_callbacks.on_sprite)
+		mp_callbacks.on_sprite(player->GetSpriteName(), player->GetSpriteIndex());
+	if (mp_callbacks.on_facing)
+		mp_callbacks.on_facing(player->GetFacing());
+	if (mp_callbacks.on_hidden)
+		mp_callbacks.on_hidden(player->IsSpriteHidden());
+	auto sysn = Main_Data::game_system->GetSystemName();
+	if (mp_callbacks.on_system)
+		mp_callbacks.on_system(ToString(sysn));
+}
+
+void Game_Multiplayer::GodotMpPlaySe(const std::string& name, int volume, int tempo, int balance) {
+	if (volume <= 0) return;
+
+	lcf::rpg::Sound sound;
+	sound.name   = name;
+	sound.volume = volume;
+	sound.tempo  = tempo;
+	sound.balance = balance;
+
+	Main_Data::game_system->SePlay(sound);
+}
+
+void Game_Multiplayer::GodotMpSetPlayerName(int id, const std::string& name) {
+	auto it = players.find(id);
+	if (it == players.end()) return;
+
+	auto& player = it->second;
+	if (!player.ch) return;
+
+	auto scene_map = Scene::Find(Scene::SceneType::Map);
+	if (!scene_map) return;
+
+	player.account = true; // don't wrap the name in <>
+
+	auto* old_list = DrawableMgr::GetLocalListPtr();
+	DrawableMgr::SetLocalList(&scene_map->GetDrawableList());
+	player.chat_name = std::make_unique<ChatName>(id, player, name);
+	DrawableMgr::SetLocalList(old_list);
+}
+
+void Game_Multiplayer::GodotMpSetPlayerSystemGraphic(int id, const std::string& sys_name) {
+	auto it = players.find(id);
+	if (it == players.end()) return;
+	auto& player = it->second;
+	if (player.chat_name) {
+		player.chat_name->SetSystemGraphic(sys_name);
+	}
 }

@@ -16,7 +16,7 @@
  */
 
 // FIXME: Move in platform/generic (?) and handle with CMake
-#if !(defined(OPENDINGUX) || defined(PLAYER_NINTENDO) || defined(PLAYER_UI))
+#if !(defined(OPENDINGUX) || defined(PLAYER_NINTENDO) || defined(PLAYER_UI)) || defined(PLAYER_TARGET_GODOT)
 
 // Headers
 #include "input_buttons.h"

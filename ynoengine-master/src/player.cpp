@@ -217,9 +217,10 @@ void Player::Run() {
 	Game_Clock::ResetFrame(Game_Clock::now());
 
 	// Main loop
-#if defined(USE_LIBRETRO) || defined(EMSCRIPTEN)
+#if defined(USE_LIBRETRO) || defined(EMSCRIPTEN) || defined(PLAYER_TARGET_GODOT)
 	// emscripten implemented in main.cpp
 	// libretro invokes the MainLoop through a retro_run-callback
+	// godot: main loop is driven externally by RPGMakerPlayer::_process()
 #else
 	while (Transition::instance().IsActive() || (Scene::instance && Scene::instance->type != Scene::Null)) {
 		MainLoop();
@@ -1125,7 +1126,7 @@ void Player::LoadFonts() {
 		Font::SetNameText(Font::CreateFtFont(std::move(name_text), 11, false, false), false);
 	}
 
-	auto name_text_2 = FileFinder::OpenFont("NameText2");
+	auto name_text_2 = FileFinder::OpenFont("TinyUnicode");
 	if (name_text_2) {
 		Font::SetNameText(Font::CreateFtFont(std::move(name_text_2), 13, false, false), true);
 	}

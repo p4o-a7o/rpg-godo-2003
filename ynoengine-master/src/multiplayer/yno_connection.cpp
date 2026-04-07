@@ -1,4 +1,7 @@
 #include "yno_connection.h"
+
+#ifdef EMSCRIPTEN
+
 #include <emscripten/websocket.h>
 #include "../external/TinySHA1.hpp"
 
@@ -219,3 +222,32 @@ void YNOConnection::FlushQueue() {
 		include = !include;
 	}
 }
+
+#else // !EMSCRIPTEN — no-op stubs for non-web platforms
+
+#include <cstddef>
+
+const size_t YNOConnection::MAX_QUEUE_SIZE{ 4088 };
+
+struct YNOConnection::IMPL {
+	bool closed = true;
+};
+
+YNOConnection::YNOConnection() : impl(new IMPL) {}
+YNOConnection::YNOConnection(YNOConnection&& o)
+	: Connection(std::move(o)), impl(std::move(o.impl)) {}
+YNOConnection& YNOConnection::operator=(YNOConnection&& o) {
+	Connection::operator=(std::move(o));
+	if (this != &o) {
+		impl = std::move(o.impl);
+	}
+	return *this;
+}
+YNOConnection::~YNOConnection() {}
+
+void YNOConnection::Open(std::string_view) {}
+void YNOConnection::Close() { Multiplayer::Connection::Close(); }
+void YNOConnection::Send(std::string_view) {}
+void YNOConnection::FlushQueue() {}
+
+#endif // EMSCRIPTEN

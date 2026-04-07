@@ -1,0 +1,23 @@
+{
+	"disabled_build_options": {
+		"d3d12": false,
+		"disable_3d": true,
+		"disable_navigation_2d": true,
+		"disable_navigation_3d": true,
+		"disable_physics_3d": true,
+		"disable_xr": true,
+		"forward_mobile_renderer": false,
+		"forward_plus_renderer": false,
+		"metal": false,
+		"module_godot_physics_3d_enabled": false,
+		"module_openxr_enabled": false,
+		"rendering_device": false,
+		"vulkan": false,
+		"wayland": false,
+		"x11": false
+	},
+	"disabled_classes": [
+		"Node3D"
+	],
+	"type": "build_profile"
+}

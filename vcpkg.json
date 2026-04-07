@@ -1,0 +1,19 @@
+{
+  "name": "proj",
+  "version": "0.1.0",
+  "dependencies": [
+    "inih",
+    "expat",
+    "zlib",
+    "libpng",
+    "fmt",
+    "pixman",
+    "freetype",
+    "harfbuzz",
+    "nlohmann-json",
+    "speexdsp",
+    "libsamplerate",
+    "mpg123",
+    "opusfile"
+  ]
+}

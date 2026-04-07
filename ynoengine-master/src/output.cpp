@@ -22,6 +22,7 @@
 #include <cstdio>
 #include <iostream>
 #include <fstream>
+#include <stdexcept>
 #include <thread>
 #include <chrono>
 #include <fmt/color.h>
@@ -297,8 +298,13 @@ void Output::ErrorStr(std::string const& err) {
 
 	Player::exit_code = EXIT_FAILURE;
 
+#if defined(PLAYER_TARGET_GODOT)
+	// In Godot mode, throw instead of exit() to avoid killing the host process.
+	throw std::runtime_error(err);
+#else
 	// FIXME: No idea how to indicate error from core in libretro
 	exit(Player::exit_code);
+#endif
 }
 
 void Output::WarningStr(std::string const& warn) {

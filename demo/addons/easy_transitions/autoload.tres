@@ -1,0 +1,19 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://cs5577x8csfyn"]
+
+[ext_resource type="Shader" uid="uid://dg3ecut30p7i0" path="res://addons/easy_transitions/transition.gdshader" id="1_vdosp"]
+
+[sub_resource type="Gradient" id="Gradient_vdosp"]
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_ws4br"]
+gradient = SubResource("Gradient_vdosp")
+
+[resource]
+shader = ExtResource("1_vdosp")
+shader_parameter/screen_size = Vector2(320, 240)
+shader_parameter/progress = 0.0
+shader_parameter/pixel_size_diamante = 15.0
+shader_parameter/type = 0
+shader_parameter/reversed = false
+shader_parameter/max_pixel_size = 2.0
+shader_parameter/wipe_texture = SubResource("GradientTexture2D_ws4br")
+shader_parameter/feather = 0.3708

@@ -1,0 +1,12 @@
+[configuration]
+
+entry_symbol = "easyrpg_godot_init"
+compatibility_minimum = "4.5"
+
+[libraries]
+
+macos.debug   = "res://bin/libeasyrpg_godot.macos.debugd.dylib"
+macos.release = "res://bin/libeasyrpg_godot.macos.release.dylib"
+
+windows.debug.x86_64   = "res://bin/easyrpg_godotd.dll"
+windows.release.x86_64 = "res://bin/easyrpg_godot.dll"

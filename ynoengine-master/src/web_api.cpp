@@ -1,4 +1,7 @@
 #include "web_api.h"
+
+#ifdef EMSCRIPTEN
+
 #include "emscripten/emscripten.h"
 #include "output.h"
 
@@ -110,3 +113,27 @@ void Web_API::OnRequestFile(std::string_view path) {
 		onRequestFile(UTF8ToString($0, $1));
 	}, path.data(), path.size());
 }
+
+#else // !EMSCRIPTEN — no-op stubs for non-web platforms
+
+#include <string>
+
+std::string Web_API::GetSocketURL() { return {}; }
+void Web_API::OnLoadMap(std::string_view) {}
+void Web_API::OnRoomSwitch() {}
+void Web_API::SyncPlayerData(std::string_view, int, int, std::string_view, const int[5], int) {}
+void Web_API::OnPlayerDisconnect(int) {}
+void Web_API::OnPlayerNameUpdated(std::string_view, int) {}
+void Web_API::OnPlayerSystemUpdated(std::string_view, int) {}
+void Web_API::UpdateConnectionStatus(int) {}
+void Web_API::ReceiveInputFeedback(int) {}
+void Web_API::NametagModeUpdated(int) {}
+void Web_API::OnPlayerSpriteUpdated(std::string_view, int, int) {}
+void Web_API::OnPlayerTeleported(int, int, int) {}
+void Web_API::OnUpdateSystemGraphic(std::string_view) {}
+void Web_API::OnRequestBadgeUpdate() {}
+void Web_API::ShowToastMessage(std::string_view, std::string_view) {}
+bool Web_API::ShouldConnectPlayer(std::string_view) { return true; }
+void Web_API::OnRequestFile(std::string_view) {}
+
+#endif // EMSCRIPTEN

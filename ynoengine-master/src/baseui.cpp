@@ -28,6 +28,8 @@
 #  include "platform/sdl/sdl_ui.h"
 #elif USE_LIBRETRO
 #  include "platform/libretro/ui.h"
+#elif defined(PLAYER_TARGET_GODOT)
+#  include "platform/godot/ui.h"
 #elif defined(__3DS__)
 #  include "platform/3ds/ui.h"
 #elif defined(__vita__)
