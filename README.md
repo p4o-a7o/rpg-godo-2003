@@ -66,7 +66,17 @@ rm -rf build && \
 ## linux compilation
 
 ```sh
-# todo
+sudo apt install libopus-dev libmpg123-dev libpixman-1-dev libexpat1-dev pkg-config libinih-dev libicu-dev libpng-dev libfmt-dev
+
+mkdir build && cd build
+
+#debug
+cmake -DCMAKE_BUILD_TYPE=Debug ..
+cmake --build . --config Debug
+
+# release
+cmake ..
+cmake --build .
 ```
 
 ---
