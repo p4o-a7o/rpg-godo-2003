@@ -13,7 +13,7 @@ extends Control
 @onready var run_on_start: CheckBox = %RunOnStart
 @onready var save_and_run: Button = %SaveAndRun
 
-@export var engine: RPGMakerPlayer
+@export var engine: Node
 
 const _SETTINGS_PATH := "user://main_settings.cfg"
 
@@ -22,6 +22,11 @@ var server_node: EasyServer = null
 var _watch_timer: Timer = null
 
 func _ready() -> void:
+	var args := OS.get_cmdline_args()
+	if args.has("--server-only"):
+		_start_server_only()
+		return
+	
 	var cfg := ConfigFile.new()
 	var err := cfg.load(_SETTINGS_PATH)
 	
@@ -43,10 +48,6 @@ func _ready() -> void:
 	audio_slider.value_changed.connect(_on_audio_volume_changed)
 	save_and_run.pressed.connect(_on_save_and_run)
 	
-	var args := OS.get_cmdline_args()
-	if args.has("--server-only"):
-		_start_server_only()
-		return
 	if args.has("--autorun") or run_on_start.button_pressed:
 		_launch_game()
 
