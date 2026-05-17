@@ -43,8 +43,8 @@ func do_open_debug_menu() -> void:
 
 func set_resolution_scale(scale: float) -> void:
 	var e := get_node_or_null("%RPGMakerPlayer") as RPGMakerPlayer
-	if scale < 0.1 or scale > 5.:
-		Log.error("Keep scale in range of [0.1, 5.0]")
+	if scale < 0.75 or scale > 2.:
+		Log.error("Keep scale in range of [0.75, 2.0]")
 	if e and e.is_running():
 		var x: int = floor(320. * scale)
 		var y: int = floor(240. * scale)
@@ -59,5 +59,5 @@ func _add_limbo_commands() -> void:
 	LimboConsole.register_command(set_resolution_scale, "rescale", "Scales resolution to a given multiplier")
 
 func _ready() -> void:
-	if OS.is_debug_build():
+	if OS.is_debug_build() or true:
 		_add_limbo_commands()

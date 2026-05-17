@@ -66,19 +66,16 @@ rm -rf build && \
 ## linux compilation
 
 ```sh
-sudo apt install libopus-dev libmpg123-dev libpixman-1-dev libexpat1-dev pkg-config libinih-dev libicu-dev libpng-dev libfmt-dev
+git clone https://github.com/microsoft/vcpkg.git
+./vcpkg/bootstrap-vcpkg.sh
 
 mkdir build && cd build
 
-#debug
-cmake -DCMAKE_BUILD_TYPE=Debug ..
-cmake --build . --config Debug
+cmake -S . -B build -D CMAKE_BUILD_TYPE=Release -D CMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake
+# or
+cmake -S . -B build -D CMAKE_BUILD_TYPE=Debug -D CMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake
 
-# release
-cmake ..
-cmake --build .
-```
-
+cmake --build build  --parallel
 ---
 
 gotta make builds less hacky later..

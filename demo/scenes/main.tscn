@@ -1,13 +1,13 @@
 [gd_scene format=3 uid="uid://dqclyd3klu6qq"]
 
-[ext_resource type="Script" uid="uid://cpeujp7pw3qji" path="res://cogs/audio_output.gd" id="2_0wfyh"]
-[ext_resource type="Script" uid="uid://dxchet40fcu5b" path="res://cogs/debug.gd" id="2_o6xl0"]
+[ext_resource type="Script" uid="uid://bpl2msts7fe8c" path="res://cogs/audio_output.gd" id="2_0wfyh"]
+[ext_resource type="Script" uid="uid://c7appq8adg23t" path="res://cogs/debug.gd" id="2_o6xl0"]
 [ext_resource type="Theme" uid="uid://dx13y3513lj8e" path="res://resources/theme.tres" id="2_sugp2"]
-[ext_resource type="Script" uid="uid://bswmb6f22ppne" path="res://cogs/player.gd" id="2_tipki"]
-[ext_resource type="Script" uid="uid://cdkrqbf84voqr" path="res://cogs/setup_screen.gd" id="3_tefeu"]
+[ext_resource type="Script" uid="uid://k5g7aae8way2" path="res://cogs/player.gd" id="2_tipki"]
+[ext_resource type="Script" uid="uid://blxa12njnbatg" path="res://cogs/setup_screen.gd" id="3_tefeu"]
 [ext_resource type="Texture2D" uid="uid://dcw31o6ckjsa3" path="res://resources/orchidmantis_system_celestial.png" id="4_tbgi4"]
 [ext_resource type="Texture2D" uid="uid://8nq581ljnhf1" path="res://resources/16x16.png" id="4_tefeu"]
-[ext_resource type="Script" uid="uid://cw1alatqpixpr" path="res://cogs/game_texture.gd" id="8_tipki"]
+[ext_resource type="Script" uid="uid://c7d4uy5lls8cx" path="res://cogs/game_texture.gd" id="8_tipki"]
 
 [sub_resource type="Gradient" id="Gradient_tbgi4"]
 offsets = PackedFloat32Array(0, 0.627907, 0.9302326, 1)
@@ -35,6 +35,9 @@ region = Rect2(0, 48, 16, 16)
 atlas = ExtResource("4_tefeu")
 region = Rect2(128, 0, 16, 16)
 
+[sub_resource type="ViewportTexture" id="ViewportTexture_tipki"]
+viewport_path = NodePath("EngineLayer/TextureRect/GameSubViewport")
+
 [node name="Main" type="Node" unique_id=1774641092]
 
 [node name="WE_PostProcess" type="WorldEnvironment" parent="." unique_id=1883357518]
@@ -44,8 +47,8 @@ environment = SubResource("Environment_0wfyh")
 game_path = "res://games/CU_offline"
 unique_name_in_owner = true
 script = ExtResource("2_tipki")
-texture_rect = NodePath("../EngineLayer/SubViewportContainer/GameSubViewport/GameTexture")
-game_sub_viewport = NodePath("../EngineLayer/SubViewportContainer/GameSubViewport")
+texture_rect = NodePath("../EngineLayer/TextureRect/GameSubViewport/GameTexture")
+game_sub_viewport = NodePath("../EngineLayer/TextureRect/GameSubViewport")
 
 [node name="AudioOutput" type="Node" parent="RPGMakerPlayer" unique_id=1197651198 node_paths=PackedStringArray("engine")]
 script = ExtResource("2_0wfyh")
@@ -532,25 +535,23 @@ metadata/_edit_use_anchors_ = true
 unique_name_in_owner = true
 visible = false
 
-[node name="SubViewportContainer" type="SubViewportContainer" parent="EngineLayer" unique_id=1702761665]
+[node name="TextureRect" type="TextureRect" parent="EngineLayer" unique_id=443753672]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-stretch = true
-stretch_shrink = 2
-mouse_target = true
+texture = SubResource("ViewportTexture_tipki")
 metadata/_edit_use_anchors_ = true
 
-[node name="GameSubViewport" type="SubViewport" parent="EngineLayer/SubViewportContainer" unique_id=1663316751]
+[node name="GameSubViewport" type="SubViewport" parent="EngineLayer/TextureRect" unique_id=1663316751]
 unique_name_in_owner = true
 handle_input_locally = false
 canvas_item_default_texture_filter = 0
 size = Vector2i(320, 240)
-render_target_update_mode = 0
+render_target_update_mode = 4
 
-[node name="BlackBG" type="ColorRect" parent="EngineLayer/SubViewportContainer/GameSubViewport" unique_id=255198257]
+[node name="BlackBG" type="ColorRect" parent="EngineLayer/TextureRect/GameSubViewport" unique_id=255198257]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -558,7 +559,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 1)
 
-[node name="GameTexture" type="TextureRect" parent="EngineLayer/SubViewportContainer/GameSubViewport" unique_id=2126990430 node_paths=PackedStringArray("engine")]
+[node name="GameTexture" type="TextureRect" parent="EngineLayer/TextureRect/GameSubViewport" unique_id=2126990430 node_paths=PackedStringArray("engine")]
 unique_name_in_owner = true
 texture_filter = 1
 anchors_preset = 15

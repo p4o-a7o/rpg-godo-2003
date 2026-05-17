@@ -1,6 +1,6 @@
 [gd_resource type="ShaderMaterial" format=3 uid="uid://cs5577x8csfyn"]
 
-[ext_resource type="Shader" uid="uid://dg3ecut30p7i0" path="res://addons/easy_transitions/transition.gdshader" id="1_vdosp"]
+[ext_resource type="Shader" uid="uid://dpvnrwvd4leut" path="res://addons/easy_transitions/transition.gdshader" id="1_vdosp"]
 
 [sub_resource type="Gradient" id="Gradient_vdosp"]
 

@@ -10,3 +10,6 @@ macos.release = "res://bin/libeasyrpg_godot.macos.release.dylib"
 
 windows.debug.x86_64   = "res://bin/easyrpg_godotd.dll"
 windows.release.x86_64 = "res://bin/easyrpg_godot.dll"
+
+linux.debug.x86_64   = "res://bin/libeasyrpg_godotd.so"
+linux.release.x86_64 = "res://bin/libeasyrpg_godot.so"
