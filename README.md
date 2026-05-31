@@ -18,29 +18,51 @@ add to User Settings (JSON):
         "CMAKE_TOOLCHAIN_FILE": "vcpkg/scripts/buildsystems/vcpkg.cmake"
     }
 
+:: CMake VS path (add to env): C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin
+
 :: debug:
 
-& "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" -B build -S . -DCMAKE_TOOLCHAIN_FILE="vcpkg/scripts/buildsystems/vcpkg.cmake" `
-   -DVCPKG_TARGET_TRIPLET="x64-windows-static" `
-   -DVCPKG_INSTALLED_DIR="C:\proj\vcpkg_installed"
+& cmake -B build -S . `
+  -DCMAKE_BUILD_TYPE=Debug `
+  -DVCPKG_TARGET_TRIPLET="x64-windows-static" `
+  -DCMAKE_TOOLCHAIN_FILE="vcpkg/scripts/buildsystems/vcpkg.cmake"
 
-& "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" --build "C:\proj\build" --config Debug --target easyrpg_godot --verbose 2>&1
+& cmake --build build --parallel --target easyrpg_godot --config Debug
 
 :: release:
 
-& "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe"  -B build -S . `
+& cmake  -B build -S . `
   -DCMAKE_BUILD_TYPE=Release `
   -DVCPKG_TARGET_TRIPLET="x64-windows-static" `
   -DCMAKE_TOOLCHAIN_FILE="vcpkg/scripts/buildsystems/vcpkg.cmake"
 
-& "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" --build "C:\proj\build" --config Release --target easyrpg_godot --verbose 2>&1
+& cmake --build build --parallel --target easyrpg_godot --config Release
 
 :: stripped export example:
 
 godot-4.6.2-stable>scons platform=windows target=template_release profile="C:\proj\demo\custom.py" build_profile="C:\proj\demo\stripped.gdbuild"
 ```
 
-## macos compilation
+## linux compilation
+
+```sh
+git clone https://github.com/microsoft/vcpkg.git
+./vcpkg/bootstrap-vcpkg.sh
+
+mkdir build && cd build
+
+cmake -S . -B build -D CMAKE_BUILD_TYPE=Release -D CMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake
+
+cmake -S . -B build -D CMAKE_BUILD_TYPE=Debug -D CMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake
+
+cmake --build build --parallel
+```
+---
+
+<details>
+<summary>cursed stuff</summary>
+
+## macos compilation (not using vcpkg, keeping it just for myself)
 
 ```bash
 # install required binaries (list is not full, i forgor)
@@ -63,19 +85,4 @@ rm -rf build && \
   cmake --build build --parallel
 ```
 
-## linux compilation
-
-```sh
-git clone https://github.com/microsoft/vcpkg.git
-./vcpkg/bootstrap-vcpkg.sh
-
-mkdir build && cd build
-
-cmake -S . -B build -D CMAKE_BUILD_TYPE=Release -D CMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake
-# or
-cmake -S . -B build -D CMAKE_BUILD_TYPE=Debug -D CMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake
-
-cmake --build build  --parallel
----
-
-gotta make builds less hacky later..
+</details>

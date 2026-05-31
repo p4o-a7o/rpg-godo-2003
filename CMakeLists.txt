@@ -1,10 +1,5 @@
 cmake_minimum_required(VERSION 3.18...3.31 FATAL_ERROR)
 
-if(MSVC)
-    set(VCPKG_TARGET_TRIPLET "x64-windows-static" CACHE STRING "")
-    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
-endif()
-
 project(easyrpg_godot
     VERSION 0.0.1
     DESCRIPTION "EasyRPG / ynoengine GDExtension for Godot 4"
@@ -18,44 +13,26 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(EASYRPG_BUILD_WEB "Build for Emscripten/WASM (Godot Web export)" OFF)
 
-if(APPLE AND NOT DEFINED CMAKE_PREFIX_PATH)
-    execute_process(
-        COMMAND brew --prefix
-        OUTPUT_VARIABLE HOMEBREW_PREFIX
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-        ERROR_QUIET
-    )
-    if(HOMEBREW_PREFIX)
-        list(APPEND CMAKE_PREFIX_PATH "${HOMEBREW_PREFIX}")
-        # Also tell pkg-config where to look
-        set(ENV{PKG_CONFIG_PATH}
-            "${HOMEBREW_PREFIX}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
-        message(STATUS "Homebrew prefix: ${HOMEBREW_PREFIX}")
-    endif()
-endif()
-
 set(YNOENGINE_DIR  "${CMAKE_CURRENT_SOURCE_DIR}/ynoengine-master")
 set(GODOTCPP_DIR   "${CMAKE_CURRENT_SOURCE_DIR}/godot-cpp-master")
 set(GDEXT_SRC_DIR  "${CMAKE_CURRENT_SOURCE_DIR}/gdextension/src")
 
-# Tell ynoengine's CMakeLists to use our Godot platform backend.
-# We add a new platform option "godot" that mirrors the "libretro" path.
 set(PLAYER_TARGET_PLATFORM "godot" CACHE STRING "Platform: godot"  FORCE)
 set(PLAYER_AUDIO_BACKEND   "godot" CACHE STRING "Audio: godot"     FORCE)
 set(PLAYER_HAS_AUDIO       ON      CACHE BOOL   "Enable audio"     FORCE)
 set(PLAYER_BUILD_LIBLCF    ON      CACHE BOOL   "Build liblcf from source" FORCE)
-set(BUILD_SHARED_LIBS      ON     CACHE BOOL   "Static build"     FORCE)
+set(BUILD_SHARED_LIBS      ON      CACHE BOOL   "Static build"     FORCE)
 
 set(PLAYER_ENABLE_DRWAV    ON  CACHE BOOL "Built-in WAV decoder (dr_wav)"    FORCE)
 set(PLAYER_ENABLE_FMMIDI   ON  CACHE BOOL "Built-in MIDI sequencer (fmmidi)" FORCE)
 set(PLAYER_WITH_OPUS       ON  CACHE BOOL "Enable Opus via opusfile"         FORCE)
 set(PLAYER_WITH_MPG123     ON  CACHE BOOL "Enable libmpg123 (MP3 support)" FORCE)
-set(PLAYER_WITH_LIBSNDFILE OFF CACHE BOOL "Disable libsndfile"  FORCE)
-set(PLAYER_WITH_OGGVORBIS  OFF CACHE BOOL "Disable libvorbis"   FORCE)
-set(PLAYER_WITH_WILDMIDI   OFF CACHE BOOL "Disable wildmidi"    FORCE)
-set(PLAYER_WITH_FLUIDSYNTH OFF CACHE BOOL "Disable fluidsynth"  FORCE)
-set(PLAYER_WITH_FLUIDLITE  OFF CACHE BOOL "Disable fluidlite"   FORCE)
-set(PLAYER_WITH_XMP        OFF CACHE BOOL "Disable libxmp"      FORCE)
+set(PLAYER_WITH_LIBSNDFILE ON  CACHE BOOL "Disable libsndfile"  FORCE)
+set(PLAYER_WITH_OGGVORBIS  ON  CACHE BOOL "Disable libvorbis"   FORCE)
+set(PLAYER_WITH_WILDMIDI   ON  CACHE BOOL "Disable wildmidi"    FORCE)
+set(PLAYER_WITH_FLUIDSYNTH ON  CACHE BOOL "Disable fluidsynth"  FORCE)
+set(PLAYER_WITH_FLUIDLITE  ON  CACHE BOOL "Disable fluidlite"   FORCE)
+set(PLAYER_WITH_XMP        ON  CACHE BOOL "Disable libxmp"      FORCE)
 
 set(PLAYER_BUILD_EXECUTABLE OFF) # supress execuable build
 

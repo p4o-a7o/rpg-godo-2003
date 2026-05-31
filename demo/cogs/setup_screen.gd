@@ -96,6 +96,7 @@ func _on_audio_volume_changed(value: float) -> void:
 	)
 
 func _on_save_and_run() -> void:
+	save_and_run.disabled = true
 	_save_settings()
 	Transition.custom(_launch_game, TransitionPresets.get_slow_fade())
 
@@ -133,6 +134,7 @@ func _on_engine_stopped() -> void:
 	Transition.outro()
 	godot_menu_layer.visible = true
 	engine_layer.visible     = false
+	save_and_run.disabled = false
 	if multiplayer_node:
 		multiplayer_node.queue_free()
 		multiplayer_node = null

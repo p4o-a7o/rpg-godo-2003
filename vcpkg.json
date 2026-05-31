@@ -15,6 +15,11 @@
     "libsamplerate",
     "mpg123",
     "opusfile",
-    "icu"
+    "icu",
+    "libvorbis",
+    "libxmp",
+    "libsndfile",
+    "fluidsynth",
+    "wildmidi"
   ]
 }
