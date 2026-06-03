@@ -62,6 +62,26 @@ cmake --build build --parallel
 <details>
 <summary>cursed stuff</summary>
 
+## android compilation
+
+```bash
+rm -rf build
+
+export ANDROID_NDK_HOME=/home/bde/Android/Sdk/ndk/30.0.14904198
+
+cmake -S . -B build \
+  -G Ninja \
+  -D CMAKE_BUILD_TYPE=Debug \
+  -D CMAKE_TOOLCHAIN_FILE=vcpkg/scripts/buildsystems/vcpkg.cmake \
+  -D VCPKG_CHAINLOAD_TOOLCHAIN_FILE=/home/bde/Android/Sdk/ndk/30.0.14904198/build/cmake/android.toolchain.cmake \
+  -D VCPKG_TARGET_TRIPLET=arm64-android \
+  -D ANDROID_ABI=arm64-v8a \
+  -D ANDROID_PLATFORM=android-28 \
+  -D CMAKE_MAKE_PROGRAM=/home/bde/Android/Sdk/cmake/4.1.2/bin/ninja
+
+cmake --build build --parallel
+```
+
 ## macos compilation (not using vcpkg, keeping it just for myself)
 
 ```bash

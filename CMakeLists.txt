@@ -47,6 +47,16 @@ target_sources(${YNOENGINE_TARGET} PRIVATE
     ${YNOENGINE_DIR}/src/platform/godot/audio.cpp
 )
 
+if(ANDROID)
+    target_sources(${YNOENGINE_TARGET} PRIVATE
+        ${YNOENGINE_DIR}/src/platform/android/android.cpp
+        ${YNOENGINE_DIR}/src/platform/android/android.h
+    )
+    target_include_directories(${YNOENGINE_TARGET} PRIVATE
+        ${YNOENGINE_DIR}/src/platform/android
+    )
+endif()
+
 target_compile_definitions(${YNOENGINE_TARGET} PUBLIC
     PLAYER_UI=GodotUi
     PLAYER_TARGET_GODOT=1
@@ -95,14 +105,12 @@ if(EMSCRIPTEN OR EASYRPG_BUILD_WEB)
         LINK_FLAGS "-sSIDE_MODULE=1"
     )
     target_compile_definitions(easyrpg_godot PRIVATE EMSCRIPTEN=1)
-
 elseif(WIN32)
     set_target_properties(easyrpg_godot PROPERTIES
         PREFIX ""
         SUFFIX ".dll"
         WINDOWS_EXPORT_ALL_SYMBOLS ON
     )
-
 elseif(APPLE)
     if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "")
         set(_BUILD_SUFFIX "debug")
@@ -114,7 +122,11 @@ elseif(APPLE)
         SUFFIX       ".dylib"
         OUTPUT_NAME  "easyrpg_godot.macos.${_BUILD_SUFFIX}"
     )
-
+elseif(ANDROID)
+    set_target_properties(easyrpg_godot PROPERTIES
+        PREFIX "lib"
+        SUFFIX "_arm64.so"
+    )
 else()
     # Linux
     set_target_properties(easyrpg_godot PROPERTIES

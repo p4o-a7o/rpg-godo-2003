@@ -26,7 +26,7 @@
 #  include "platform/libretro/ui.h"
 #endif
 
-#if defined(USE_SDL) && defined(__ANDROID__)
+#if defined(USE_SDL) && defined(__ANDROID__) && !defined(PLAYER_TARGET_GODOT)
 #  include <jni.h>
 #  include <SDL_system.h>
 #endif
@@ -73,7 +73,7 @@ FileFinder_RTP::FileFinder_RTP(bool no_rtp, bool no_rtp_warnings, std::string rt
 	if (LibretroUi::environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &dir) && dir) {
 		AddPath(std::string(dir) + "/rtp/" + version_str);
 	}
-#elif defined(__ANDROID__)
+#elif defined(__ANDROID__) && !defined(PLAYER_TARGET_GODOT)
 	// Invoke "String getRtpPath()" in EasyRPG Activity via JNI
 	JNIEnv* env = (JNIEnv*)SDL_AndroidGetJNIEnv();
 	jobject sdl_activity = (jobject)SDL_AndroidGetActivity();

@@ -270,6 +270,18 @@ void RPGMakerPlayer::start_game() {
 		FileFinder::SetGameFilesystem(gamefs);
 		Output::Debug("RPGMakerPlayer: game filesystem set to: {}", path_str);
 
+		FileExtGuesser::RPG2KNonStandardFilenameGuesser rpg2kRemap;
+		if (!FileFinder::IsRPG2kProject(FileFinder::Game()) &&
+			!FileFinder::IsEasyRpgProject(FileFinder::Game())) {
+
+			rpg2kRemap = FileExtGuesser::GetRPG2kProjectWithRenames(FileFinder::Game());
+			if (rpg2kRemap.Empty()) {
+				UtilityFunctions::push_error("RPGMakerPlayer: game_path does not appear to be a valid RPG Maker 2000/2003 project.");
+				Player::Exit();
+				return;
+			}
+		}
+
 		godot_ui_ = dynamic_cast<GodotUi*>(DisplayUi.get());
 		if (!godot_ui_) {
 			UtilityFunctions::push_error(

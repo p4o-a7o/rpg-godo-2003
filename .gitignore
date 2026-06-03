@@ -1,4 +1,4 @@
-build/
+build*
 demo/games/*
 vcpkg_installed/*
 
