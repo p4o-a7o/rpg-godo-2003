@@ -19,7 +19,6 @@
     "libvorbis",
     "libxmp",
     "libsndfile",
-    "fluidsynth",
     "wildmidi"
   ]
 }

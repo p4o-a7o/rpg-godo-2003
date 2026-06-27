@@ -21,6 +21,10 @@ func _godot_key_to_easyrpg(keycode: Key) -> int:
 		KEY_DOWN:   return 15
 		KEY_LEFT:   return 12
 		KEY_RIGHT:  return 14
+		KEY_W:      return 13
+		KEY_S:      return 15
+		KEY_A:      return 12
+		KEY_D:      return 14
 		KEY_Z:      return 63
 		KEY_X:      return 61
 		KEY_ENTER:  return 4
