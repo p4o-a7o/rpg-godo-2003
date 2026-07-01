@@ -1,6 +1,6 @@
 extends Control
 
-@onready var container := %ToolbarMargin
+@onready var container := %PanelContainer
 @onready var dimmer := %ToolbarDimmer
 
 var tex_reconnect_off := preload("res://resources/reconnect-off.png")
@@ -14,7 +14,7 @@ func _ready() -> void:
 	%ChatToggle.icon = tex_chat_off
 	%ChatToggle.button_pressed = false
 	
-	dimmer.modulate.a = 0
+	dimmer.set_position(Vector2(0, -container.size.y))
 	
 	MpEvents.on_connected.connect(_multiplayer_connected)
 	MpEvents.on_disconnected.connect(_multiplayer_disconnected)
@@ -31,7 +31,12 @@ func reveal_toolbar():
 	tween.parallel().tween_property(container, "position", Vector2(0, 0), 0.25) \
 		.set_trans(Tween.TRANS_CUBIC) \
 		.set_ease(Tween.EASE_OUT)
-	tween.parallel().tween_property(dimmer, "modulate:a", 0.4, 0.25) \
+	# borders_texture has a margin so im just
+	# gonna do it like this for now i suppose so
+	# the dimmer is in the same position as the
+	# container while also taking up the exact amount
+	# of area of the container that i want
+	tween.parallel().tween_property(dimmer, "position", Vector2(0, 0), 0.25) \
 		.set_trans(Tween.TRANS_CUBIC) \
 		.set_ease(Tween.EASE_OUT)
 	stop_tween()
@@ -41,7 +46,7 @@ func hide_toolbar():
 	tween.parallel().tween_property(container, "position", Vector2(0, -container.size.y), 0.4) \
 		.set_trans(Tween.TRANS_CUBIC) \
 		.set_ease(Tween.EASE_IN)
-	tween.parallel().tween_property(dimmer, "modulate:a", 0, 0.4) \
+	tween.parallel().tween_property(dimmer, "position", Vector2(0, -container.size.y), 0.4) \
 		.set_trans(Tween.TRANS_CUBIC) \
 		.set_ease(Tween.EASE_IN)
 	tween.tween_callback(_toolbar_off)
@@ -57,6 +62,12 @@ func _toolbar_off():
 
 func _toolbar_on():
 	container.visible = true
+
+func _fullscreen(on: bool):
+	if on:
+		get_window().mode = Window.MODE_FULLSCREEN
+	else:
+		get_window().mode = Window.MODE_WINDOWED
 
 func _on_mouse_entered() -> void:
 	reveal_toolbar()
@@ -104,4 +115,6 @@ func _on_reconnect_button_pressed() -> void:
 	mp_node.quit()
 	await get_tree().create_timer(0.5).timeout
 	mp_node.connect_to_room(mp_node._room_id)
-	
+
+func _on_fullscreen_toggled(toggled_on: bool) -> void:
+	_fullscreen(toggled_on)

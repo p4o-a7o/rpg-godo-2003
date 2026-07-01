@@ -13,8 +13,10 @@
 [ext_resource type="Script" uid="uid://sonh8ck8vsp" path="res://cogs/chat_overlay.gd" id="8_85g3d"]
 [ext_resource type="Script" uid="uid://c7d4uy5lls8cx" path="res://cogs/game_texture.gd" id="8_tipki"]
 [ext_resource type="FontFile" uid="uid://dh8uf0t6kqv8" path="res://resources/RM2000.ttf" id="10_choun"]
+[ext_resource type="StyleBox" uid="uid://ca3cj8e1se5t3" path="res://resources/borders_texture.tres" id="10_muem4"]
 [ext_resource type="StyleBox" uid="uid://bfbanystyirf6" path="res://resources/chat_stylebox.tres" id="11_ya4ey"]
 [ext_resource type="StyleBox" uid="uid://cg3fj7teitw24" path="res://resources/chat_stylebox_focus.tres" id="12_eb6dy"]
+[ext_resource type="Texture2D" uid="uid://br4y6pwuqmyjo" path="res://resources/fullscreenv232x.png" id="12_jbj1t"]
 
 [sub_resource type="Gradient" id="Gradient_tbgi4"]
 offsets = PackedFloat32Array(0, 0.627907, 0.9302326, 1)
@@ -710,40 +712,52 @@ unique_name_in_owner = true
 layout_mode = 3
 anchors_preset = 10
 anchor_right = 1.0
-offset_bottom = 48.0
+offset_bottom = 66.0
 grow_horizontal = 2
 mouse_filter = 1
 script = ExtResource("4_trceg")
 
 [node name="ToolbarDimmer" type="ColorRect" parent="ToolbarLayer/ToolbarRoot" unique_id=1115048541]
 unique_name_in_owner = true
-layout_mode = 0
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-color = Color(0, 0, 0, 1)
-
-[node name="ToolbarMargin" type="MarginContainer" parent="ToolbarLayer/ToolbarRoot" unique_id=2147472911]
-unique_name_in_owner = true
-visible = false
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_bottom = 48.0
+offset_left = 2.0
+offset_right = -2.0
+offset_bottom = 52.0
 grow_horizontal = 2
+offset_transform_enabled = true
+offset_transform_position = Vector2(0, 2)
+mouse_filter = 2
+color = Color(0, 0, 0, 0.49803922)
+
+[node name="PanelContainer" type="PanelContainer" parent="ToolbarLayer/ToolbarRoot" unique_id=335515382]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 56.0
+grow_horizontal = 2
+mouse_filter = 1
+theme_override_styles/panel = ExtResource("10_muem4")
+
+[node name="ToolbarMargin" type="MarginContainer" parent="ToolbarLayer/ToolbarRoot/PanelContainer" unique_id=2147472911]
+unique_name_in_owner = true
+layout_mode = 2
 theme_override_constants/margin_left = 4
 theme_override_constants/margin_top = 4
 theme_override_constants/margin_right = 4
 theme_override_constants/margin_bottom = 4
 
-[node name="ToolbarItems" type="HBoxContainer" parent="ToolbarLayer/ToolbarRoot/ToolbarMargin" unique_id=1399665641]
+[node name="ToolbarItems" type="HSplitContainer" parent="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin" unique_id=1150375865]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 1
+split_offsets = PackedInt32Array(0, 1500)
+dragging_enabled = false
+dragger_visibility = 1
 
-[node name="ReconnectButton" type="Button" parent="ToolbarLayer/ToolbarRoot/ToolbarMargin/ToolbarItems" unique_id=839221480]
+[node name="ReconnectButton" type="Button" parent="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems" unique_id=839221480]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(32, 32)
 custom_maximum_size = Vector2(32, 32)
@@ -753,7 +767,7 @@ icon = ExtResource("5_jkv2x")
 flat = true
 icon_alignment = 1
 
-[node name="ChatToggle" type="Button" parent="ToolbarLayer/ToolbarRoot/ToolbarMargin/ToolbarItems" unique_id=13752837]
+[node name="ChatToggle" type="Button" parent="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems" unique_id=13752837]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(32, 32)
 custom_maximum_size = Vector2(32, 32)
@@ -761,6 +775,17 @@ layout_mode = 2
 mouse_filter = 1
 toggle_mode = true
 icon = ExtResource("5_a8y0u")
+flat = true
+icon_alignment = 1
+
+[node name="FullscreenButton" type="Button" parent="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems" unique_id=1034920001]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(32, 32)
+custom_maximum_size = Vector2(32, 32)
+layout_mode = 2
+mouse_filter = 1
+toggle_mode = true
+icon = ExtResource("12_jbj1t")
 flat = true
 icon_alignment = 1
 
@@ -819,5 +844,6 @@ caret_blink = true
 [connection signal="toggled" from="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer3/MpEnable" to="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen" method="_on_mp_enable_toggled"]
 [connection signal="mouse_entered" from="ToolbarLayer/ToolbarRoot" to="ToolbarLayer/ToolbarRoot" method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="ToolbarLayer/ToolbarRoot" to="ToolbarLayer/ToolbarRoot" method="_on_mouse_exited"]
-[connection signal="pressed" from="ToolbarLayer/ToolbarRoot/ToolbarMargin/ToolbarItems/ReconnectButton" to="ToolbarLayer/ToolbarRoot" method="_on_reconnect_button_pressed"]
-[connection signal="toggled" from="ToolbarLayer/ToolbarRoot/ToolbarMargin/ToolbarItems/ChatToggle" to="ToolbarLayer/ToolbarRoot" method="_on_chat_toggle_toggled"]
+[connection signal="pressed" from="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems/ReconnectButton" to="ToolbarLayer/ToolbarRoot" method="_on_reconnect_button_pressed"]
+[connection signal="toggled" from="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems/ChatToggle" to="ToolbarLayer/ToolbarRoot" method="_on_chat_toggle_toggled"]
+[connection signal="toggled" from="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems/FullscreenButton" to="ToolbarLayer/ToolbarRoot" method="_on_fullscreen_toggled"]
