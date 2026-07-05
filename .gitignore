@@ -1,4 +1,5 @@
 build*
+addons/godotsteam/*
 demo/games/*
 vcpkg_installed/*
 
