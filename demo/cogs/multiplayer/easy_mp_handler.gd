@@ -1,6 +1,7 @@
 class_name MultiplayerHandler
-extends RefCounted
+extends Node
 
+var client: EasyClientSteam
 var engine: RPGMakerPlayer
 
 var enable_sounds: bool = true
@@ -59,6 +60,8 @@ var _repeating_flashes: Dictionary = {}
 
 func mp_ready() -> void:
 	engine.mp_notify_room_ready()
+	engine.mp_set_session_active(true)
+	engine.mp_sync_local_player()
 	pass
 
 func reset() -> void:
@@ -82,8 +85,8 @@ func reset() -> void:
 func _on_packet(type: String, args: Array) -> void:
 	match type:
 		# TODO (?)
-		#"s": _handle_sync_player_data(args)
-		#"ri": _handle_room_info(args)
+		"s": pass # STUB
+		"ri": _handle_room_info(args)
 		"d": _handle_disconnect(args)
 		"m": _handle_move(args)
 		"jmp": _handle_jump(args)
@@ -111,24 +114,50 @@ func _on_packet(type: String, args: Array) -> void:
 func _is_pending(id: int) -> bool:
 	return id in _pending_spawn
 
+func _process(delta: float) -> void:
+	_update_frame()
+	_do_pending_spawns()
+
 func _update_frame() -> void:
-	pass # TODO
-	"""if (_last_flash_frame_index > -1
-			and not _last_frame_flash.is_empty()
-			and _frame_index > _last_flash_frame_index):
-		_conn.send_packet("rrfl", [])
-		_last_flash_frame_index = -1
-		_last_frame_flash = []
-	
 	_frame_index += 1
 	
 	for id in _repeating_flashes:
 		if _players.has(id) and engine:
 			var f: Array = _repeating_flashes[id]
 			engine.mp_flash_player(id, f[0], f[1], f[2], f[3], f[4])
-	
-	if not _switching_room and not _switched_room:
-		_switched_room = true"""
+
+func _do_mp_add_player(id: int) -> bool:
+	if not _players.has(id):
+		return true
+	if engine == null or not engine.is_running():
+		return false
+	if not engine.is_map_ready():
+		return false
+	var p: OtherPlayer = _players[id]
+	Log.info("[MultiplayerHandler] spawning id=%d pos=(%d,%d) spr='%s'[%d]" \
+		% [id, p.x, p.y, p.sprite_name, p.sprite_index])
+	engine.mp_add_player(id, p.x, p.y, p.sprite_name, p.sprite_index, p.facing, p.speed)
+	if p.transparency > 0:
+		engine.mp_set_player_transparency(id, p.transparency)
+	if p.hidden:
+		engine.mp_set_player_hidden(id, true)
+	if p.display_name != "":
+		engine.mp_set_player_name(id, p.display_name)
+	if p.system_name != "":
+		engine.mp_set_player_system_graphic(id, p.system_name)
+	return true
+
+func _do_pending_spawns() -> void:
+	if _pending_spawn.is_empty() or engine == null or not engine.is_running():
+		return
+	var r: int = 0
+	for i in range(_pending_spawn.size()):
+		var id: int = _pending_spawn[i-r]
+		if _players.has(id):
+			if _do_mp_add_player(id):
+				print("Okay bro")
+				_pending_spawn.pop_at(i-r)
+				r += 1
 
 func _spawn_player(id: int) -> void:
 	Log.debug("[MultiplayerHandler] queuing spawn for id=%d" % id)
@@ -137,6 +166,18 @@ func _spawn_player(id: int) -> void:
 	_players[id] = p
 	if id not in _pending_spawn:
 		_pending_spawn.append(id)
+
+func _handle_room_info(args: Array) -> void:
+	if args.is_empty():
+		return
+	var room_id := int(args[0])
+	if room_id != client.sender._local_room_id:
+		Log.warn("[MultiplayerHandler] wrong room %d (expected %d)" % [room_id, client.sender._local_room_id])
+		#connect_to_room(_room_id)
+		return
+	Log.info("[MultiplayerHandler] room %d confirmed" % room_id)
+	if engine and engine.is_running():
+		engine.mp_notify_room_ready()
 
 func _handle_disconnect(args: Array) -> void:
 	if args.is_empty():

@@ -6,7 +6,6 @@ extends Control
 # not a huge deal for anyone anyway so that will suffice for now, but
 # i thought i would add a note here anyways since i do not intend it to be hard-coded
 
-@export var mp_connection: EasyMultiplayer = null
 # TODO: menu option for this thing or a debug command
 @export var chat_history_limit: int = 10:
 	set(value):
@@ -68,7 +67,11 @@ func _process(delta: float) -> void:
 		contents.modulate.a = transp
 
 func _on_text_submitted(text_field) -> void:
-	mp_connection._conn.send_packet("chat", [chat_text_field.text])
+	# FIXME unfuck this later
+	var client: EasyClientSteam = %RPGMakerPlayer.get_node_or_null("./MpNode") as EasyClientSteam
+	if not client:
+		return
+	client.send_message("chat", [chat_text_field.text])
 	chat_text_field.clear()
 	chat_text_field.set_visible(false)
 	chat_text_field.release_focus()

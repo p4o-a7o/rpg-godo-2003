@@ -37,6 +37,7 @@ var _lobby_id: int = -1
 
 # Keys = handle to steam connection
 var _peers: Dictionary[int, PeerEntry] = {}
+var _peers_by_handle: Dictionary[int, PeerEntry] = {}
 
 # for reading and writing
 var _work_buffer: StreamPeerBuffer = StreamPeerBuffer.new()
@@ -49,12 +50,14 @@ func _ready() -> void:
 		start()
 	sender._server = self
 	_wire_player_signals()
+	engine.mp_notify_room_ready()
+	engine.mp_set_session_active(true)
+	engine.mp_sync_local_player()
 
 # p4o-a7o: since you are the P2P host, the host
 # will also need to broadcast itself to all other
 # peers in the same room id as the host
 func _wire_player_signals() -> void:
-	var engine: RPGMakerPlayer = %RPGMakerPlayer
 	engine.player_moved.connect(sender._on_local_moved)
 	engine.player_facing_changed.connect(sender._on_local_facing)
 	engine.player_speed_changed.connect(sender._on_local_speed)
@@ -106,42 +109,40 @@ func _maybe_grow_buffer(buf: StreamPeerBuffer, num_bytes: int):
 func _slice_buf_to_cursor() -> PackedByteArray:
 	return _work_buffer.data_array.slice(0, _work_buffer.get_position())
 
-func _build(msg: String, args: Array = []) -> PackedByteArray:
-	_work_buffer.clear()
+func _build(msg: String, args: Array = []) -> String:
+	#_work_buffer.clear()
 	var s := msg
 	for a in args:
 		s += PARAM_DELIM + str(a)
-	var s_buf := s.to_ascii_buffer()
-	_maybe_grow_buffer(_work_buffer, s_buf.size())
-	return _slice_buf_to_cursor()
+	return s
 
 func _send_to(entry: PeerEntry, msg: PackedByteArray, flags: int = Steam.NETWORKING_SEND_UNRELIABLE_NO_DELAY) -> void:
 	Log.debug("[EasyServer] TX -> peer=%d, %d bytes" % [ entry.steam_id, msg.size() ])
 	Steam.sendMessageToConnection(entry.steam_conn_handle, msg, flags)
 
-func _broadcast_to_room(room_id: int, msg: PackedByteArray, exclude_pid: int = -1) -> void:
+func _broadcast_to_room(room_id: int, msg: String, exclude_pid: int = -1) -> void:
 	for pid in _peers.keys():
 		if pid == exclude_pid:
 			continue
 		if (_peers[pid] as PeerEntry).room_id == room_id:
-			_send_to(pid, msg)
+			_send_to(_peers[pid], msg.to_utf8_buffer())
 
 func _handle_relay(pid: int, entry: PeerEntry, pkt_name: String, args: Array) -> void:
 	_broadcast_to_room(entry.room_id, _build(pkt_name, [str(entry.id)] + args), pid)
 
 func _send_peer_state_to(target: PeerEntry, other: PeerEntry) -> void:
-	_send_to(target, _build("m", [str(other.id), str(other.x), str(other.y)]))
-	_send_to(target, _build("spr", [str(other.id), other.sprite_name, str(other.sprite_idx)]))
-	_send_to(target, _build("f", [str(other.id), str(other.facing)]))
-	_send_to(target, _build("spd", [str(other.id), str(other.speed)]))
+	_send_to(target, _build("m", [str(other.id), str(other.x), str(other.y)]).to_utf8_buffer())
+	_send_to(target, _build("spr", [str(other.id), other.sprite_name, str(other.sprite_idx)]).to_utf8_buffer())
+	_send_to(target, _build("f", [str(other.id), str(other.facing)]).to_utf8_buffer())
+	_send_to(target, _build("spd", [str(other.id), str(other.speed)]).to_utf8_buffer())
 	if other.hidden:
-		_send_to(target, _build("h", [str(other.id), "1"]))
+		_send_to(target, _build("h", [str(other.id), "1"]).to_utf8_buffer())
 	if other.transparency > 0:
-		_send_to(target, _build("tr", [str(other.id), str(other.transparency)]))
+		_send_to(target, _build("tr", [str(other.id), str(other.transparency)]).to_utf8_buffer())
 	if other.sys_name != "":
-		_send_to(target, _build("sys", [str(other.id), other.sys_name]))
+		_send_to(target, _build("sys", [str(other.id), other.sys_name]).to_utf8_buffer())
 	if other.display_name != "":
-		_send_to(target, _build("name", [str(other.id), other.display_name]))
+		_send_to(target, _build("name", [str(other.id), other.display_name]).to_utf8_buffer())
 
 ###########################################################################################
 
@@ -152,7 +153,7 @@ func _handle_sr(pid: int, entry: PeerEntry, args: Array) -> void:
 		_broadcast_to_room(old_room, _build("d", [str(entry.id)]), pid)
 	entry.room_id = new_room
 	Log.info("[EasyServer] peer %d joined room %d" % [pid, new_room])
-	_send_to(entry, _build("ri", [str(new_room)]))
+	_send_to(entry, _build("ri", [str(new_room)]).to_utf8_buffer())
 	for other_pid in _peers.keys():
 		if other_pid == pid:
 			continue
@@ -252,7 +253,7 @@ func _handle_chat(pid: int, entry: PeerEntry, args: Array) -> void:
 		if not cur_peer.chat_enabled:
 			continue
 		if cur_peer.room_id == entry.room_id:
-			_send_to(other_pid, _build("chat", [str(pid), msg]))
+			_send_to(other_pid, _build("chat", [str(pid), msg]).to_utf8_buffer())
 
 func _handle_chaton(pid: int, entry: PeerEntry, args: Array) -> void:
 	if args.size() < 1:
@@ -267,16 +268,18 @@ func _on_peer_connected(conn_handle: int, steam_id: int) -> void:
 	peer_obj.steam_id = steam_id
 	_next_pid += 1
 	_peers[peer_obj.id] = peer_obj
+	_peers_by_handle[conn_handle] = peer_obj
 	
 	Log.debug("[EasyServer] peer %d connected, sending hello" % steam_id)
 	# p4o-a7o: added PID to message for identifying self in chat messages
-	_send_to(peer_obj, _build("s", ["0", str(peer_obj.id)]), Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+	_send_to(peer_obj, _build("s", ["0", str(peer_obj.id)]).to_utf8_buffer(), Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 	
 func _on_peer_disconnected(peer: PeerEntry) -> void:
 	var pid := peer.id
 	Log.info("[EasyServer] peer %d closed connection (room %d)" % [pid, peer.room_id])
 	_broadcast_to_room(peer.room_id, _build("d", [str(peer.id)]), pid)
 	_peers.erase(pid)
+	_peers_by_handle.erase(peer.steam_conn_handle)
 
 func _receive_messages():
 	var messages := Steam.receiveMessagesOnPollGroup(_poll_group, 256)
@@ -289,19 +292,19 @@ func _receive_messages():
 	for msg in messages:
 		var data: PackedByteArray = msg["payload"]
 		var conn_handle: int = msg["connection"]
-		var peer: PeerEntry = _peers[conn_handle]
+		var peer: PeerEntry = _peers_by_handle[conn_handle]
 		var pid: int = peer.id
-		var msg_str := data.get_string_from_ascii()
+		var msg_str := data.get_string_from_utf8()
 		# ajgoiaejriogaejiorg
 		var p := msg_str.find(PARAM_DELIM)
 		var type: String
 		var args: Array
 		if p == -1:
-			type = msg
+			type = msg_str
 			args = []
 		else:
-			type = msg.substr(0, p)
-			args = Array(msg.substr(p + PARAM_DELIM.length()).split(PARAM_DELIM, false))
+			type = msg_str.substr(0, p)
+			args = Array(msg_str.substr(p + PARAM_DELIM.length()).split(PARAM_DELIM, false))
 		Log.debug("[EasyServer] RX peer=%d '%s' args=%s" % [pid, type, str(args)])
 		
 		match type:
@@ -340,8 +343,7 @@ func _on_net_connection_status_changed(conn_handle: int, connection: Dictionary,
 		if new_state == Steam.CONNECTION_STATE_CLOSED_BY_PEER:
 			# Erase him
 			# TODO
-			_on_peer_disconnected(_peers[conn_handle])
-			_peers.erase(conn_handle)
+			_on_peer_disconnected(_peers_by_handle[conn_handle])
 	if old_state == Steam.CONNECTION_STATE_NONE:
 		if new_state == Steam.CONNECTION_STATE_CONNECTING:
 			print("Server: Accepting connection from %s" % identity)

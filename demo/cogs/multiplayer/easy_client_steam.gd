@@ -3,7 +3,10 @@ extends Node
 
 const PARAM_DELIM := "\uFFFF" # separates fields within one message
 
-var engine: RPGMakerPlayer
+var engine: RPGMakerPlayer:
+	set(value):
+		engine = value
+		mp_handler.engine = value
 var sender: ClientSender = ClientSender.new()
 var mp_handler: MultiplayerHandler = MultiplayerHandler.new()
 var player_name: String = ""
@@ -33,13 +36,14 @@ var _reconnecting: bool = false
 
 func _ready() -> void:
 	sender._client = self
+	mp_handler.client = self
+	self.add_child(mp_handler)
 	_wire_player_signals()
 	Steam.lobby_joined.connect(_on_lobby_joined)
 	Steam.join_requested.connect(_on_join_request)
 	Steam.network_connection_status_changed.connect(_on_net_connection_status_changed)
 
 func _wire_player_signals() -> void:
-	var engine: RPGMakerPlayer = %RPGMakerPlayer
 	engine.player_moved.connect(sender._on_local_moved)
 	engine.player_facing_changed.connect(sender._on_local_facing)
 	engine.player_speed_changed.connect(sender._on_local_speed)
@@ -68,25 +72,29 @@ static func _build(type: String, args: Array = []) -> String:
 func send_message(type: String, args: Array = [], flags: int = Steam.NETWORKING_SEND_UNRELIABLE_NO_DELAY) -> void:
 	if _connection_handle <= 0:
 		return
-	Steam.sendMessageToConnection(_connection_handle, _build(type, args).to_ascii_buffer(), flags)
+	Steam.sendMessageToConnection(_connection_handle, _build(type, args).to_utf8_buffer(), flags)
 
 func switch_room(map_id: int) -> void:
 	Log.info("[EasyClient] switch_room id=%d" % map_id)
 	_switching_room = true
 	mp_handler.reset()
+	_room_id = map_id
 	
 	if engine and engine.is_running():
 		engine.mp_set_session_active(true)
 		engine.mp_set_room_id(map_id)
 	
 	if _connection_state == Steam.CONNECTION_STATE_CONNECTED:
-		Log.debug("[EasyMultiplayer] already connected - sending basic data + sr")
+		Log.debug("[EasyClient] already connected - sending basic data + sr")
 		if engine and engine.is_running():
 			engine.mp_sync_local_player()
 		sender.send_basic_data()
-		send_message("sr", [str(_room_id)])
+		send_message("sr", [str(map_id)])
 	else:
 		Log.debug("[EasyClient] switch_room: Not connected.")
+
+func set_enable_chat(enabled: bool) -> void:
+	send_message("chaton", ["1" if enabled else "0"], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 
 func _process(delta: float) -> void:
 	if _lobby_id > 0 and _connection_handle > 0:
@@ -99,17 +107,17 @@ func _receive_messages():
 	
 	for msg in res:
 		var data: PackedByteArray = msg["payload"]
-		var msg_str := data.get_string_from_ascii()
+		var msg_str := data.get_string_from_utf8()
 		# ajgoiaejriogaejiorg
 		var p := msg_str.find(PARAM_DELIM)
 		var type: String
 		var args: Array
 		if p == -1:
-			type = msg
+			type = msg_str
 			args = []
 		else:
-			type = msg.substr(0, p)
-			args = Array(msg.substr(p + PARAM_DELIM.length()).split(PARAM_DELIM, false))
+			type = msg_str.substr(0, p)
+			args = Array(msg_str.substr(p + PARAM_DELIM.length()).split(PARAM_DELIM, false))
 		Log.debug("[EasyClient] RX '%s' args=%s" % [type, str(args)])
 		mp_handler._on_packet(type, args)
 

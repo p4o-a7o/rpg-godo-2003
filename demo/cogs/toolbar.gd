@@ -90,7 +90,7 @@ func _on_chat_toggle_toggled(toggled_on: bool) -> void:
 		Log.warn("Toolbar: Chat button pressed but no game is running!")
 		return
 	
-	var mp_node := engine.get_node_or_null("./MpNode") as EasyMultiplayer
+	var mp_node := engine.get_node_or_null("./MpNode") as EasyClientSteam
 	if not mp_node:
 		return
 	
@@ -106,7 +106,7 @@ func _on_reconnect_button_pressed() -> void:
 		Log.warn("Toolbar: Reconnect requested but no game is running!")
 		return
 	
-	var mp_node := engine.get_node_or_null("./MpNode") as EasyMultiplayer
+	var mp_node := engine.get_node_or_null("./MpNode") as EasyClientSteam
 	if not mp_node:
 		return
 	Log.debug("Toolbar: Reconnect requested")

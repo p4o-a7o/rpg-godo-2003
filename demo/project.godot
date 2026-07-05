@@ -74,3 +74,14 @@ renderer/rendering_method.mobile="gl_compatibility"
 textures/vram_compression/import_etc2_astc=true
 textures/default_filters/use_nearest_mipmap_filter=true
 2d/snap/snap_2d_transforms_to_pixel=true
+
+[steam]
+
+initialization/app_data/app_type=0
+initialization/app_data/app_id=0
+initialization/app_data/demo_id=0
+initialization/app_data/playtest_id=0
+initialization/app_data/tool_id=0
+initialization/processes/initialize_on_startup=false
+initialization/processes/embed_callbacks=false
+multiplayer_peer/max_channels=4

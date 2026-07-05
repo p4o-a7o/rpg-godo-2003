@@ -8,9 +8,7 @@ extends Control
 @onready var audio_slider: HSlider = %AudioSlider
 @onready var mp_enable: CheckBox = %MpEnable
 @onready var mp_name: LineEdit = %MpName
-@onready var mp_url: LineEdit = %MpUrl
-@onready var mp_server: CheckBox = %MpServer
-@onready var run_on_start: CheckBox = %RunOnStart
+@onready var mp_host_lobby: CheckBox = %MpHostLobby
 @onready var save_and_run: Button = %SaveAndRun
 @onready var enable_chat: CheckBox = %EnableChat
 @onready var chat_ctrl: Control = %ChatControl
@@ -23,8 +21,8 @@ extends Control
 
 const _SETTINGS_PATH := "user://main_settings.cfg"
 
-var multiplayer_node: EasyMultiplayer = null
-var server_node: EasyServer = null
+var client_node: EasyClientSteam = null
+var server_node: EasyServerSteam = null
 var _watch_timer: Timer = null
 
 func _ready() -> void:
@@ -45,9 +43,6 @@ func _ready() -> void:
 	audio_slider.value = cfg.get_value("audio", "volume", 80.0)
 	mp_enable.button_pressed = cfg.get_value("multiplayer", "enabled", false)
 	mp_name.text = cfg.get_value("multiplayer", "name", "Minnatsuki")
-	mp_url.text = cfg.get_value("multiplayer", "url", "ws://127.0.0.1:42424")
-	mp_server.button_pressed = cfg.get_value("multiplayer", "host_locally", false)
-	run_on_start.button_pressed = cfg.get_value("game", "run_on_start", false)
 	window_scale.selected = cfg.get_value("game", "window_scale", 0)
 	enable_chat.button_pressed = cfg.get_value("multiplayer", "enable_chat", false)
 	
@@ -60,42 +55,46 @@ func _ready() -> void:
 	audio_slider.value_changed.connect(_on_audio_volume_changed)
 	save_and_run.pressed.connect(_on_save_and_run)
 	
-	if args.has("--autorun") or run_on_start.button_pressed:
-		_launch_game()
+	#if args.has("--autorun") or run_on_start.button_pressed:
+	#	_launch_game()
 
-func _start_mp_server(parent: Node, port: int = 42424) -> void:
+func _on_relay_status(available: bool, status_code: int, debug_message: String) -> void:
+	if available:
+		%MultiplayerOptions.visible = true
+		%AvailabilityPanel.visible = false
+	else:
+		%AvailabilityText.text = "Multiplayer availability check failed with message: %s (Code: %s)" % [debug_message, status_code]
+
+func _start_mp_server(parent: Node) -> void:
 	if server_node:
+		server_node.stop()
 		server_node.queue_free()
 		server_node = null
-	server_node = EasyServer.new()
+	server_node = EasyServerSteam.new()
 	server_node.name = "MpServerNode"
-	server_node.port = port
+	server_node.engine = engine
 	parent.add_child(server_node)
 	if not server_node.start():
-		Log.error("[setup_screen] failed to start server on port %d" % port)
+		Log.error("[setup_screen] Failed to start server for some reason")
 		server_node.queue_free()
 		server_node = null
 
 func _start_mp_client(parent: Node) -> void:
-	multiplayer_node = EasyMultiplayer.new()
-	multiplayer_node.name = "MpNode"
-	multiplayer_node.engine = engine.get_path()
-	multiplayer_node.server_url = mp_url.text.strip_edges()
-	multiplayer_node.player_name = mp_name.text.strip_edges()
-	multiplayer_node.enable_chat = enable_chat.button_pressed
-	chat_ctrl.mp_connection = multiplayer_node # p4o-a7o: this is a little weird yes but we all die in the end anyways
-	parent.add_child(multiplayer_node)
+	client_node = EasyClientSteam.new()
+	client_node.name = "MpNode"
+	client_node.engine = engine 
+	parent.add_child(client_node)
 	# nametag modes: 0=NONE, 1=CLASSIC (3-char), 2=COMPACT (full), 3=SLIM (full, small font)
 	engine.mp_set_nametag_mode(3)
-	multiplayer_node.connect_to_room(0)
 	
 func _start_server_only() -> void:
 	godot_menu_layer.visible = false
-	var port := 42424
+	"""var port := 42424
 	for arg in OS.get_cmdline_args():
 		if arg.begins_with("--port="):
-			port = int(arg.substr(7))
-	_start_mp_server(self, port)
+			port = int(arg.substr(7))"""
+	_start_mp_server(self)
+	
 
 func _on_browse_pressed() -> void:
 	game_path_file_dialog.popup_centered_ratio(0.75)
@@ -117,13 +116,10 @@ func _on_save_and_run() -> void:
 func _save_settings() -> void:
 	var cfg := ConfigFile.new()
 	cfg.set_value("game",        "path",         game_path.text.strip_edges())
-	cfg.set_value("game",        "run_on_start", run_on_start.button_pressed)
 	cfg.set_value("game",        "window_scale", window_scale.selected)
 	cfg.set_value("audio",       "volume",       audio_slider.value)
 	cfg.set_value("multiplayer", "enabled",      mp_enable.button_pressed)
 	cfg.set_value("multiplayer", "name",         mp_name.text.strip_edges())
-	cfg.set_value("multiplayer", "url",          mp_url.text.strip_edges())
-	cfg.set_value("multiplayer", "host_locally", mp_server.button_pressed)
 	cfg.set_value("multiplayer", "enable_chat",  enable_chat.button_pressed)
 	cfg.save(_SETTINGS_PATH)
 
@@ -151,10 +147,12 @@ func _on_engine_stopped() -> void:
 	godot_menu_layer.visible = true
 	engine_layer.visible     = false
 	save_and_run.disabled = false
-	if multiplayer_node:
-		multiplayer_node.queue_free()
-		multiplayer_node = null
+	if client_node:
+		client_node.close_connection()
+		client_node.queue_free()
+		client_node = null
 	if server_node:
+		server_node.stop()
 		server_node.queue_free()
 		server_node = null
 	chat_ctrl.disable_overlay()
@@ -186,22 +184,22 @@ func _launch_game() -> void:
 	_start_engine_watcher()
 	
 	if mp_enable.button_pressed:
-		if multiplayer_node:
-			multiplayer_node.queue_free()
+		if client_node:
+			client_node.close_connection()
+			client_node.queue_free()
 		if server_node:
+			server_node.stop()
 			server_node.queue_free()
 			server_node = null
-		if mp_server.button_pressed:
-			_start_mp_server(engine)
 		
-		_start_mp_client(engine)
+		if mp_host_lobby.button_pressed:
+			_start_mp_server(self)
+		else:
+			_start_mp_client(engine)
+
 
 func _on_mp_enable_toggled(toggled_on: bool) -> void:
 	mp_name.editable = toggled_on
-	mp_url.editable = toggled_on
-	mp_server.disabled = not toggled_on
-	if not toggled_on:
-		mp_server.button_pressed = false
 
 # p4o-a7o: this is connected from the signals menu if that matters
 func _on_window_scale_changed(index: int) -> void:

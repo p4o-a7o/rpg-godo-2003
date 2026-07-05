@@ -61,7 +61,7 @@ func chat_command(enabled: bool) -> void:
 		if not e.is_running():
 			Log.warn("Engine is not running!")
 			return
-		var mp_node := e.get_node_or_null("./MpNode") as EasyMultiplayer
+		var mp_node := e.get_node_or_null("./MpNode") as EasyClientSteam
 		if not mp_node:
 			Log.warn("You are not connected to multiplayer!")
 			return
