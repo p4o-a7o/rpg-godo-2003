@@ -36,7 +36,7 @@ var _reconnecting: bool = false
 
 func _ready() -> void:
 	sender._client = self
-	mp_handler.client = self
+	mp_handler.sender = sender
 	self.add_child(mp_handler)
 	_wire_player_signals()
 	Steam.lobby_joined.connect(_on_lobby_joined)

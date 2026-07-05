@@ -1,6 +1,7 @@
 class_name MultiplayerHandler
 extends Node
 
+var sender: Sender
 var client: EasyClientSteam
 var engine: RPGMakerPlayer
 
@@ -9,6 +10,7 @@ var enable_chat: bool = false
 var mute_audio: bool = false
 var moving_queue_limit: int = 4
 
+# TODO set these values
 var local_x: int = 0
 var local_y: int = 0
 
@@ -84,8 +86,7 @@ func reset() -> void:
 
 func _on_packet(type: String, args: Array) -> void:
 	match type:
-		# TODO (?)
-		"s": pass # STUB
+		"s": _handle_sync_player_data(args)
 		"ri": _handle_room_info(args)
 		"d": _handle_disconnect(args)
 		"m": _handle_move(args)
@@ -108,6 +109,11 @@ func _on_packet(type: String, args: Array) -> void:
 		"bas": _handle_battle_anim_id_list(args)
 		"name": _handle_name(args)
 		"chat": _handle_chat(args)
+		
+		# server-only packets below this line
+		"sr": _handle_sr(args)
+		"chaton": pass # stub because we dont handle chaton here
+		
 		_:
 			Log.warn("[MultiplayerHandler] unknown packet '%s' args=%s" % [type, str(args)])
 
@@ -115,8 +121,8 @@ func _is_pending(id: int) -> bool:
 	return id in _pending_spawn
 
 func _process(delta: float) -> void:
-	_update_frame()
 	_do_pending_spawns()
+	_update_frame()
 
 func _update_frame() -> void:
 	_frame_index += 1
@@ -167,23 +173,7 @@ func _spawn_player(id: int) -> void:
 	if id not in _pending_spawn:
 		_pending_spawn.append(id)
 
-func _handle_room_info(args: Array) -> void:
-	if args.is_empty():
-		return
-	var room_id := int(args[0])
-	if room_id != client.sender._local_room_id:
-		Log.warn("[MultiplayerHandler] wrong room %d (expected %d)" % [room_id, client.sender._local_room_id])
-		#connect_to_room(_room_id)
-		return
-	Log.info("[MultiplayerHandler] room %d confirmed" % room_id)
-	if engine and engine.is_running():
-		engine.mp_notify_room_ready()
-
-func _handle_disconnect(args: Array) -> void:
-	if args.is_empty():
-		return
-	var id := int(args[0])
-	Log.info("[MultiplayerHandler] player DISCONNECT id=%d" % id)
+func _remove_player(id: int) -> void:
 	if not _players.has(id):
 		return
 	_dc_players.append(_players[id])
@@ -191,6 +181,47 @@ func _handle_disconnect(args: Array) -> void:
 	_repeating_flashes.erase(id)
 	if engine:
 		engine.mp_remove_player(id)
+
+# Client (non-host) only
+func _handle_room_info(args: Array) -> void:
+	if args.is_empty():
+		return
+	var room_id := int(args[0])
+	if room_id != sender._local_room_id:
+		# TODO
+		Log.warn("[MultiplayerHandler] wrong room %d (expected %d)" % [room_id, sender._local_room_id])
+		#connect_to_room(_room_id)
+		return
+	Log.info("[MultiplayerHandler] room %d confirmed" % room_id)
+	if engine and engine.is_running():
+		engine.mp_notify_room_ready()
+
+# Client (non-host) only
+func _handle_sync_player_data(_args: Array) -> void:
+	Log.info("[MultiplayerHandler] session ready")
+	if not client:
+		Log.error("[MultiplayerHandler] Received player data sync, but client is null!")
+		return
+	client._my_pid = int(_args[1])
+	if engine and engine.is_running():
+		engine.mp_sync_local_player()
+	sender.send_basic_data()
+	sender._send_message("sr", [str(sender._local_room_id)])
+	sender._send_message("chaton", ["1" if enable_chat else "0"])
+
+# Server host only
+func _handle_sr(_args: Array) -> void:
+	var pid := int(_args[0])
+	var new_room_id := int(_args[1])
+	if new_room_id != sender._local_room_id:
+		_remove_player(pid)
+
+func _handle_disconnect(args: Array) -> void:
+	if args.is_empty():
+		return
+	var id := int(args[0])
+	Log.info("[MultiplayerHandler] player DISCONNECT id=%d" % id)
+	_remove_player(id)
 
 func _handle_move(args: Array) -> void:
 	if args.size() < 3:

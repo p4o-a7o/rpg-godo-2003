@@ -24,8 +24,12 @@ class PeerEntry:
 	var display_name: String = ""
 	var chat_enabled: bool = false # p4o-a7o: off by default
 	
-var engine: RPGMakerPlayer
+var engine: RPGMakerPlayer:
+	set(value):
+		engine = value
+		mp_handler.engine = value
 var sender: ServerSender = ServerSender.new()
+var mp_handler: MultiplayerHandler = MultiplayerHandler.new()
 
 # PID 0 is reserved for the P2P host
 var _next_pid: int = 1
@@ -39,16 +43,14 @@ var _lobby_id: int = -1
 var _peers: Dictionary[int, PeerEntry] = {}
 var _peers_by_handle: Dictionary[int, PeerEntry] = {}
 
-# for reading and writing
-var _work_buffer: StreamPeerBuffer = StreamPeerBuffer.new()
-
 func _ready() -> void:
-	_work_buffer.resize(16)
 	Steam.network_connection_status_changed.connect(_on_net_connection_status_changed)
 	Steam.lobby_created.connect(_on_lobby_created)
 	if auto_start:
 		start()
 	sender._server = self
+	mp_handler.sender = sender
+	self.add_child(mp_handler)
 	_wire_player_signals()
 	engine.mp_notify_room_ready()
 	engine.mp_set_session_active(true)
@@ -98,19 +100,7 @@ func _process(_delta: float):
 	if _lobby_id > 0 and _listen_handle > 0:
 		_receive_messages()
 
-func _maybe_grow_buffer(buf: StreamPeerBuffer, num_bytes: int):
-	var cursor: int = buf.get_position()
-	if cursor+num_bytes > buf.get_size():
-		if num_bytes+4 > 16:
-			buf.resize(buf.get_size()+num_bytes+16+4)
-		else:
-			buf.resize(buf.get_size()+16)
-
-func _slice_buf_to_cursor() -> PackedByteArray:
-	return _work_buffer.data_array.slice(0, _work_buffer.get_position())
-
 func _build(msg: String, args: Array = []) -> String:
-	#_work_buffer.clear()
 	var s := msg
 	for a in args:
 		s += PARAM_DELIM + str(a)
@@ -287,8 +277,6 @@ func _receive_messages():
 		return
 	Log.debug("[EasyServer]: %d messages to read" % messages.size())
 	
-	_work_buffer.clear()
-	
 	for msg in messages:
 		var data: PackedByteArray = msg["payload"]
 		var conn_handle: int = msg["connection"]
@@ -307,6 +295,9 @@ func _receive_messages():
 			args = Array(msg_str.substr(p + PARAM_DELIM.length()).split(PARAM_DELIM, false))
 		Log.debug("[EasyServer] RX peer=%d '%s' args=%s" % [pid, type, str(args)])
 		
+		# TODO maybe remove at a later date, this is
+		# somewhat unnecessary
+		var packet_ok := true
 		match type:
 			"sr": _handle_sr(pid, peer, args)
 			"m", "tp": _handle_move(pid, peer, args)
@@ -324,8 +315,12 @@ func _receive_messages():
 				_handle_relay(pid, peer, type, args)
 			_:
 				Log.warn("[EasyServer] unknown packet '%s' from peer %d" % [type, pid])
-	
-	_work_buffer.clear() # final clear for good measure i guess
+				packet_ok = false
+		
+		if packet_ok:
+			var handler_args := [ str(pid) ]
+			handler_args.append_array(args)
+			mp_handler._on_packet(type, handler_args)
 
 func _on_lobby_created(status: Steam.Result, lobby_id: int):
 	if status != Steam.Result.RESULT_OK:
