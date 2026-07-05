@@ -4,7 +4,6 @@ extends Node
 @export var auto_start: bool = false
 
 const PARAM_DELIM := "\uFFFF" # separates fields within one message
-const MSG_DELIM := "\uFFFE" # separates multiple messages in one ws frame
 
 class PeerEntry:
 	var steam_id: int = -1
@@ -26,6 +25,7 @@ class PeerEntry:
 	var chat_enabled: bool = false # p4o-a7o: off by default
 	
 var engine: RPGMakerPlayer
+var sender: ServerSender = ServerSender.new()
 
 # PID 0 is reserved for the P2P host
 var _next_pid: int = 1
@@ -47,6 +47,29 @@ func _ready() -> void:
 	Steam.lobby_created.connect(_on_lobby_created)
 	if auto_start:
 		start()
+	sender._server = self
+	_wire_player_signals()
+
+# p4o-a7o: since you are the P2P host, the host
+# will also need to broadcast itself to all other
+# peers in the same room id as the host
+func _wire_player_signals() -> void:
+	var engine: RPGMakerPlayer =  %RPGMakerPlayer
+	engine.player_moved.connect(sender._on_local_moved)
+	engine.player_facing_changed.connect(sender._on_local_facing)
+	engine.player_speed_changed.connect(sender._on_local_speed)
+	engine.player_sprite_changed.connect(sender._on_local_sprite)
+	engine.player_jumped.connect(sender._on_local_jumped)
+	engine.player_flashed.connect(sender._on_local_flashed)
+	engine.player_transparency_changed.connect(sender._on_local_transparency)
+	engine.player_hidden_changed.connect(sender._on_local_hidden)
+	engine.player_teleported.connect(sender._on_local_teleported)
+	engine.player_se_played.connect(sender._on_local_se)
+	engine.player_system_changed.connect(sender._on_local_system)
+	engine.map_changed.connect(sender._on_map_changed)
+	engine.switch_set.connect(sender._on_switch_set)
+	engine.variable_set.connect(sender._on_variable_set)
+	engine.event_triggered.connect(sender._on_event_triggered)
 
 func start() -> bool:
 	Log.debug("[EasyServer] start()")
