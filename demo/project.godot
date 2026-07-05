@@ -26,6 +26,7 @@ config/icon="uid://bo8upe3r86d2e"
 Transition="*uid://cxbmv4cldqgdq"
 LimboConsole="*uid://cisblm1xppxgv"
 MpEvents="*uid://eyv6bsvkkdxi"
+Steamworks="*uid://dah8mqmtwwkum"
 
 [display]
 
