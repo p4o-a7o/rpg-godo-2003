@@ -54,7 +54,7 @@ func _ready() -> void:
 # will also need to broadcast itself to all other
 # peers in the same room id as the host
 func _wire_player_signals() -> void:
-	var engine: RPGMakerPlayer =  %RPGMakerPlayer
+	var engine: RPGMakerPlayer = %RPGMakerPlayer
 	engine.player_moved.connect(sender._on_local_moved)
 	engine.player_facing_changed.connect(sender._on_local_facing)
 	engine.player_speed_changed.connect(sender._on_local_speed)

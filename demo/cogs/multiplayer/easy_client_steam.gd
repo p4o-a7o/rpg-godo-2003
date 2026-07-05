@@ -1,0 +1,142 @@
+class_name EasyClientSteam
+extends Node
+
+const PARAM_DELIM := "\uFFFF" # separates fields within one message
+
+var engine: RPGMakerPlayer
+var sender: ClientSender = ClientSender.new()
+var mp_handler: MultiplayerHandler = MultiplayerHandler.new()
+var player_name: String = ""
+
+@export var enable_sounds: bool = true:
+	set(value):
+		enable_sounds = value
+		mp_handler.enable_sounds = value
+@export var enable_chat: bool = false
+@export var mute_audio: bool = false:
+	set(value):
+		mute_audio = value
+		mp_handler.mute_audio = value
+@export var moving_queue_limit: int = 4
+
+# Steam stuff
+var _lobby_id: int = -1
+var _lobby_owner_id: int = -1
+var _connection_handle: int = -1
+var _connection_state: int = -1
+
+var _room_id: int = -1
+var _my_pid: int = -1
+var _switching_room: bool = true
+var _switched_room: bool = false
+var _reconnecting: bool = false
+
+func _ready() -> void:
+	sender._client = self
+	_wire_player_signals()
+	Steam.lobby_joined.connect(_on_lobby_joined)
+	Steam.join_requested.connect(_on_join_request)
+	Steam.network_connection_status_changed.connect(_on_net_connection_status_changed)
+
+func _wire_player_signals() -> void:
+	var engine: RPGMakerPlayer = %RPGMakerPlayer
+	engine.player_moved.connect(sender._on_local_moved)
+	engine.player_facing_changed.connect(sender._on_local_facing)
+	engine.player_speed_changed.connect(sender._on_local_speed)
+	engine.player_sprite_changed.connect(sender._on_local_sprite)
+	engine.player_jumped.connect(sender._on_local_jumped)
+	engine.player_flashed.connect(sender._on_local_flashed)
+	engine.player_transparency_changed.connect(sender._on_local_transparency)
+	engine.player_hidden_changed.connect(sender._on_local_hidden)
+	engine.player_teleported.connect(sender._on_local_teleported)
+	engine.player_se_played.connect(sender._on_local_se)
+	engine.player_system_changed.connect(sender._on_local_system)
+	engine.map_changed.connect(sender._on_map_changed)
+	engine.switch_set.connect(sender._on_switch_set)
+	engine.variable_set.connect(sender._on_variable_set)
+	engine.event_triggered.connect(sender._on_event_triggered)
+
+func _sanitize(s: String) -> String:
+	return s.replace(PARAM_DELIM, "")
+
+static func _build(type: String, args: Array = []) -> String:
+	var s := type
+	for a in args:
+		s += PARAM_DELIM + str(a)
+	return s
+
+func send_message(type: String, args: Array = [], flags: int = Steam.NETWORKING_SEND_UNRELIABLE_NO_DELAY) -> void:
+	if _connection_handle <= 0:
+		return
+	Steam.sendMessageToConnection(_connection_handle, _build(type, args).to_ascii_buffer(), flags)
+
+func switch_room(map_id: int) -> void:
+	Log.info("[EasyClient] switch_room id=%d" % map_id)
+	_switching_room = true
+	mp_handler.reset()
+	
+	if engine and engine.is_running():
+		engine.mp_set_session_active(true)
+		engine.mp_set_room_id(map_id)
+	
+	if _connection_state == Steam.CONNECTION_STATE_CONNECTED:
+		Log.debug("[EasyMultiplayer] already connected - sending basic data + sr")
+		if engine and engine.is_running():
+			engine.mp_sync_local_player()
+		sender.send_basic_data()
+		send_message("sr", [str(_room_id)])
+	else:
+		Log.debug("[EasyClient] switch_room: Not connected.")
+
+func _process(delta: float) -> void:
+	if _lobby_id > 0 and _connection_handle > 0:
+		_receive_messages()
+
+func _receive_messages():
+	var res := Steam.receiveMessagesOnConnection(_connection_handle, 128)
+	if res.size() > 0:
+		Log.debug("[EasyClient] %d messages to read" % res.size())
+	
+	for msg in res:
+		var data: PackedByteArray = msg["payload"]
+		var msg_str := data.get_string_from_ascii()
+		# ajgoiaejriogaejiorg
+		var p := msg_str.find(PARAM_DELIM)
+		var type: String
+		var args: Array
+		if p == -1:
+			type = msg
+			args = []
+		else:
+			type = msg.substr(0, p)
+			args = Array(msg.substr(p + PARAM_DELIM.length()).split(PARAM_DELIM, false))
+		Log.debug("[EasyClient] RX '%s' args=%s" % [type, str(args)])
+		mp_handler._on_packet(type, args)
+
+func _on_join_request(lobby_id: int, steam_id: int):
+	var friend_name := Steam.getFriendPersonaName(steam_id)
+	_lobby_id = lobby_id
+	_lobby_owner_id = steam_id
+	Log.debug("[EasyClient]: Joining %s's lobby" % friend_name)
+	Steam.joinLobby(lobby_id)
+
+func _on_lobby_joined(lobby_id: int, permissions: int, locked: bool, response: int):
+	Log.debug("[EasyClient] Joined lobby, initiating P2P sockets connection")
+	_connection_handle = Steam.connectP2P(_lobby_owner_id, 0, {})
+
+func _on_net_connection_status_changed(conn_handle: int, connection: Dictionary, old_state: int):
+	var new_state: int = connection["connection_state"]
+	var identity: int = connection["identity"]
+	_connection_state = new_state
+	if old_state == Steam.CONNECTION_STATE_CONNECTED:
+		if new_state == Steam.CONNECTION_STATE_CLOSED_BY_PEER:
+			Log.debug("[EasyClient] Connection closed by peer")
+			MpEvents.on_disconnected.emit()
+			mp_handler.reset()
+	if old_state == Steam.CONNECTION_STATE_NONE:
+		if new_state == Steam.CONNECTION_STATE_CONNECTING:
+			Log.debug("[EasyClient] Server accepted connection")
+			MpEvents.on_connected.emit()
+			mp_handler.mp_ready()
+			send_message("sr", [sender._local_room_id], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+			send_message("chaton", ["1" if enable_chat else "0"], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
