@@ -42,6 +42,7 @@ func _ready() -> void:
 	Steam.lobby_joined.connect(_on_lobby_joined)
 	Steam.join_requested.connect(_on_join_request)
 	Steam.network_connection_status_changed.connect(_on_net_connection_status_changed)
+	MpEvents.on_chat_message_submitted.connect(_send_chat_message)
 
 func _wire_player_signals() -> void:
 	engine.player_moved.connect(sender._on_local_moved)
@@ -96,6 +97,16 @@ func switch_room(map_id: int) -> void:
 func set_enable_chat(enabled: bool) -> void:
 	send_message("chaton", ["1" if enabled else "0"], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 
+func _send_chat_message(text: String) -> void:
+	send_message("chat", [text], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+
+func reconnect() -> void:
+	Steam.closeConnection(_connection_handle, Steam.CONNECTION_END_APP_GENERIC, "Reconnecting", false)
+	mp_handler.reset()
+	await get_tree().create_timer(0.5).timeout
+	_connection_handle = Steam.connectP2P(_lobby_owner_id, 0, {})
+	
+
 func _process(delta: float) -> void:
 	if _lobby_id > 0 and _connection_handle > 0:
 		_receive_messages()
@@ -119,7 +130,40 @@ func _receive_messages():
 			type = msg_str.substr(0, p)
 			args = Array(msg_str.substr(p + PARAM_DELIM.length()).split(PARAM_DELIM, false))
 		Log.debug("[EasyClient] RX '%s' args=%s" % [type, str(args)])
+		
+		match type:
+			"ri": 
+				_handle_room_info(args)
+				continue
+			"s": 
+				_handle_sync_player_data(args)
+				continue
+		
 		mp_handler._on_packet(type, args)
+
+# Client (non-host) only
+func _handle_room_info(args: Array) -> void:
+	if args.is_empty():
+		return
+	var room_id := int(args[0])
+	if room_id != sender._local_room_id:
+		# TODO
+		Log.warn("[EasyClient] wrong room %d (expected %d), reconnecting" % [room_id, sender._local_room_id])
+		reconnect()
+		return
+	Log.info("[EasyClient] room %d confirmed" % room_id)
+	if engine and engine.is_running():
+		engine.mp_notify_room_ready()
+
+# Client (non-host) only
+func _handle_sync_player_data(_args: Array) -> void:
+	Log.info("[EasyClient] session ready")
+	_my_pid = int(_args[1])
+	if engine and engine.is_running():
+		engine.mp_sync_local_player()
+	sender.send_basic_data()
+	sender._send_message("sr", [str(sender._local_room_id)])
+	sender._send_message("chaton", ["1" if enable_chat else "0"])
 
 func _on_join_request(lobby_id: int, steam_id: int):
 	var friend_name := Steam.getFriendPersonaName(steam_id)

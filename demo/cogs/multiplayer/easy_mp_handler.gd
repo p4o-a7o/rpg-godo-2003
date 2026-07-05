@@ -10,7 +10,6 @@ var enable_chat: bool = false
 var mute_audio: bool = false
 var moving_queue_limit: int = 4
 
-# TODO set these values
 var local_x: int = 0
 var local_y: int = 0
 
@@ -86,8 +85,6 @@ func reset() -> void:
 
 func _on_packet(type: String, args: Array) -> void:
 	match type:
-		"s": _handle_sync_player_data(args)
-		"ri": _handle_room_info(args)
 		"d": _handle_disconnect(args)
 		"m": _handle_move(args)
 		"jmp": _handle_jump(args)
@@ -181,33 +178,6 @@ func _remove_player(id: int) -> void:
 	_repeating_flashes.erase(id)
 	if engine:
 		engine.mp_remove_player(id)
-
-# Client (non-host) only
-func _handle_room_info(args: Array) -> void:
-	if args.is_empty():
-		return
-	var room_id := int(args[0])
-	if room_id != sender._local_room_id:
-		# TODO
-		Log.warn("[MultiplayerHandler] wrong room %d (expected %d)" % [room_id, sender._local_room_id])
-		#connect_to_room(_room_id)
-		return
-	Log.info("[MultiplayerHandler] room %d confirmed" % room_id)
-	if engine and engine.is_running():
-		engine.mp_notify_room_ready()
-
-# Client (non-host) only
-func _handle_sync_player_data(_args: Array) -> void:
-	Log.info("[MultiplayerHandler] session ready")
-	if not client:
-		Log.error("[MultiplayerHandler] Received player data sync, but client is null!")
-		return
-	client._my_pid = int(_args[1])
-	if engine and engine.is_running():
-		engine.mp_sync_local_player()
-	sender.send_basic_data()
-	sender._send_message("sr", [str(sender._local_room_id)])
-	sender._send_message("chaton", ["1" if enable_chat else "0"])
 
 # Server host only
 func _handle_sr(_args: Array) -> void:
@@ -457,4 +427,4 @@ func _handle_chat(args: Array) -> void:
 			return
 	else:
 		display_name = _players[id].display_name
-	MpEvents.on_chat_message.emit(display_name, msg)
+	MpEvents.on_chat_message_received.emit(display_name, msg)

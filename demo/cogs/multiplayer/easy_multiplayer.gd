@@ -582,7 +582,7 @@ func _handle_chat(args: Array) -> void:
 			return
 	else:
 		display_name = _players[id].display_name
-	MpEvents.on_chat_message.emit(display_name, msg)
+	MpEvents.on_chat_message_received.emit(display_name, msg)
 
 func _send_basic_data() -> void:
 	if not _session_connected:

@@ -1,3 +1,4 @@
+class_name ChatOverlay
 extends Control
 
 # p4o-a7o: NOTE: the placeholder text for ChatField is "Press [T] to type...", but
@@ -29,7 +30,7 @@ var _fade_tweens: Array[FadeTween] = []
 
 func _ready() -> void:
 	chat_text_field.text_submitted.connect(_on_text_submitted)
-	MpEvents.on_chat_message.connect(add_chat_message)
+	MpEvents.on_chat_message_received.connect(add_chat_message)
 	pass
 
 func _input(event: InputEvent) -> void:
@@ -67,11 +68,7 @@ func _process(delta: float) -> void:
 		contents.modulate.a = transp
 
 func _on_text_submitted(text_field) -> void:
-	# FIXME unfuck this later
-	var client: EasyClientSteam = %RPGMakerPlayer.get_node_or_null("./MpNode") as EasyClientSteam
-	if not client:
-		return
-	client.send_message("chat", [chat_text_field.text])
+	MpEvents.on_chat_message_submitted.emit(chat_text_field.text)
 	chat_text_field.clear()
 	chat_text_field.set_visible(false)
 	chat_text_field.release_focus()

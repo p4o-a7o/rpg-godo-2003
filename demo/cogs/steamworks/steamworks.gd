@@ -36,7 +36,7 @@ func force_retry():
 	_try_init_steam()
 
 func _try_init_steam():
-	var res := Steam.steamInitEx(480)
+	var res := Steam.steamInitEx(650700)
 	_status_code = res.status
 	_status_verbal = res.verbal
 	if not res.verbal:

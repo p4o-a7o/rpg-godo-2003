@@ -112,9 +112,7 @@ func _on_reconnect_button_pressed() -> void:
 	Log.debug("Toolbar: Reconnect requested")
 	%ReconnectButton.icon = tex_reconnect_off
 	%ReconnectButton.modulate = Color(1.0, 0.7, 0.33)
-	mp_node.quit()
-	await get_tree().create_timer(0.5).timeout
-	mp_node.connect_to_room(mp_node._room_id)
+	mp_node.reconnect()
 
 func _on_fullscreen_toggled(toggled_on: bool) -> void:
 	_fullscreen(toggled_on)

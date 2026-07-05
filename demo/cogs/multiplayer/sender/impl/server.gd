@@ -19,3 +19,9 @@ func _switching_room(old_room_id: int, new_room_id: int):
 		if cur_peer.room_id == old_room_id:
 			Steam.sendMessageToConnection(cur_peer.steam_conn_handle, disconnect_msg, Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 	send_basic_data()
+
+# TODO i should probably reorganize this stuff so i dont have to hack these parts in lol
+func _on_local_moved(x: int, y: int) -> void:
+	super._on_local_moved(x, y)
+	_server.mp_handler.local_x = x
+	_server.mp_handler.local_y = y

@@ -11,7 +11,7 @@ extends Control
 @onready var mp_host_lobby: CheckBox = %MpHostLobby
 @onready var save_and_run: Button = %SaveAndRun
 @onready var enable_chat: CheckBox = %EnableChat
-@onready var chat_ctrl: Control = %ChatControl
+@onready var chat_ctrl: ChatOverlay = %ChatControl
 @onready var chat_layer: CanvasLayer = %ChatOverlayLayer
 @onready var chat_vbox: VBoxContainer = %MessageContainer
 @onready var chat_field: LineEdit = %ChatField
@@ -78,11 +78,18 @@ func _start_mp_server(parent: Node) -> void:
 		Log.error("[setup_screen] Failed to start server for some reason")
 		server_node.queue_free()
 		server_node = null
+	server_node.sender._player_name = mp_name.text # lol
+	server_node.chat_overlay = chat_ctrl
+	# You are the host so theres no point in being able
+	# to click the reload button, in fact, it would not do anything
+	%ReconnectButton.disabled = true
 
 func _start_mp_client(parent: Node) -> void:
+	%ReconnectButton.disabled = false
 	client_node = EasyClientSteam.new()
 	client_node.name = "MpNode"
-	client_node.engine = engine 
+	client_node.engine = engine
+	client_node.sender._player_name = mp_name.text # lol
 	parent.add_child(client_node)
 	# nametag modes: 0=NONE, 1=CLASSIC (3-char), 2=COMPACT (full), 3=SLIM (full, small font)
 	engine.mp_set_nametag_mode(3)

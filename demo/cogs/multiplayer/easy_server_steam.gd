@@ -3,6 +3,7 @@ extends Node
 
 @export var auto_start: bool = false
 
+var chat_overlay: ChatOverlay
 const PARAM_DELIM := "\uFFFF" # separates fields within one message
 
 class PeerEntry:
@@ -55,6 +56,8 @@ func _ready() -> void:
 	engine.mp_notify_room_ready()
 	engine.mp_set_session_active(true)
 	engine.mp_sync_local_player()
+	
+	MpEvents.on_chat_message_submitted.connect(_broadcast_local_chat_message)
 
 # p4o-a7o: since you are the P2P host, the host
 # will also need to broadcast itself to all other
@@ -117,6 +120,17 @@ func _broadcast_to_room(room_id: int, msg: String, exclude_pid: int = -1) -> voi
 		if (_peers[pid] as PeerEntry).room_id == room_id:
 			_send_to(_peers[pid], msg.to_utf8_buffer())
 
+func _broadcast_local_chat_message(text: String) -> void:
+	chat_overlay.add_chat_message(sender._player_name, text)
+	
+	var msg := _build("chat", ["0", text]).to_utf8_buffer()
+	for other_pid in _peers.keys():
+		var cur_peer := _peers[other_pid] as PeerEntry
+		if not cur_peer.chat_enabled:
+			continue
+		if cur_peer.room_id == sender._local_room_id:
+			_send_to(other_pid, msg, Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+
 func _handle_relay(pid: int, entry: PeerEntry, pkt_name: String, args: Array) -> void:
 	_broadcast_to_room(entry.room_id, _build(pkt_name, [str(entry.id)] + args), pid)
 
@@ -141,6 +155,9 @@ func _handle_sr(pid: int, entry: PeerEntry, args: Array) -> void:
 	var old_room := entry.room_id
 	if old_room >= 0:
 		_broadcast_to_room(old_room, _build("d", [str(entry.id)]), pid)
+		if new_room != sender._local_room_id:
+			mp_handler._remove_player(pid)
+
 	entry.room_id = new_room
 	Log.info("[EasyServer] peer %d joined room %d" % [pid, new_room])
 	_send_to(entry, _build("ri", [str(new_room)]).to_utf8_buffer())
@@ -165,6 +182,13 @@ func _handle_sr(pid: int, entry: PeerEntry, args: Array) -> void:
 		_broadcast_to_room(new_room, _build("sys", [str(entry.id), entry.sys_name]), pid)
 	if entry.display_name != "":
 		_broadcast_to_room(new_room, _build("name", [str(entry.id), entry.display_name]), pid)
+	
+	# send basic data of own host
+	# TODO make it so that it only sends it
+	# to the client that needs to have it
+	# since this will broadcast to the whole room
+	if new_room == sender._local_room_id:
+		sender.send_basic_data()
 
 func _handle_move(pid: int, entry: PeerEntry, args: Array) -> void:
 	if args.size() < 2:
@@ -231,6 +255,7 @@ func _handle_chat(pid: int, entry: PeerEntry, args: Array) -> void:
 		return
 	# nameless players should probably not be able to talk...
 	if entry.display_name == "" or entry.display_name.length() == 0:
+		Log.warn("[EasyServer] Attempt to send chat message with no name provided")
 		return
 	var msg := args[0] as String
 	if msg.length() > 100:
@@ -243,7 +268,7 @@ func _handle_chat(pid: int, entry: PeerEntry, args: Array) -> void:
 		if not cur_peer.chat_enabled:
 			continue
 		if cur_peer.room_id == entry.room_id:
-			_send_to(other_pid, _build("chat", [str(pid), msg]).to_utf8_buffer())
+			_send_to(other_pid, _build("chat", [str(pid), msg]).to_utf8_buffer(), Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 
 func _handle_chaton(pid: int, entry: PeerEntry, args: Array) -> void:
 	if args.size() < 1:
@@ -268,6 +293,7 @@ func _on_peer_disconnected(peer: PeerEntry) -> void:
 	var pid := peer.id
 	Log.info("[EasyServer] peer %d closed connection (room %d)" % [pid, peer.room_id])
 	_broadcast_to_room(peer.room_id, _build("d", [str(peer.id)]), pid)
+	mp_handler._remove_player(peer.id)
 	_peers.erase(pid)
 	_peers_by_handle.erase(peer.steam_conn_handle)
 
