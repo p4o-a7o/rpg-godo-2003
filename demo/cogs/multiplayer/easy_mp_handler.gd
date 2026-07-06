@@ -86,7 +86,7 @@ func reset() -> void:
 func _on_packet(type: String, args: Array) -> void:
 	match type:
 		"d": _handle_disconnect(args)
-		"m": _handle_move(args)
+		"m", "tp": _handle_move(args)
 		"jmp": _handle_jump(args)
 		"f": _handle_facing(args)
 		"spd": _handle_speed(args)
@@ -162,11 +162,14 @@ func _do_pending_spawns() -> void:
 				_pending_spawn.pop_at(i-r)
 				r += 1
 
-func _spawn_player(id: int) -> void:
+func _spawn_player(id: int, now: bool = false) -> void:
 	Log.debug("[MultiplayerHandler] queuing spawn for id=%d" % id)
 	var p := OtherPlayer.new()
 	p.id = id
 	_players[id] = p
+	if now:
+		_do_mp_add_player(id)
+		return
 	if id not in _pending_spawn:
 		_pending_spawn.append(id)
 
@@ -202,47 +205,29 @@ func _handle_move(args: Array) -> void:
 	if not _players.has(id):
 		Log.debug("[MultiplayerHandler] late spawn for id=%d on first move" % id)
 		_spawn_player(id)
-	_players[id].x = x
-	_players[id].y = y
-	if _is_pending(id):
-		return
-	if engine and engine.is_running():
-		engine.mp_move_player(id, x, y)
+	_mp_move_player(id, x, y)
 
 func _handle_jump(args: Array) -> void:
 	if args.size() < 3:
 		return
 	var id := int(args[0])
-	if not _players.has(id):
-		return
-	if engine:
-		engine.mp_move_player(id, int(args[1]), int(args[2]))
+	var x := int(args[1])
+	var y := int(args[2])
+	_mp_move_player(id, x, y)
 
 func _handle_facing(args: Array) -> void:
 	if args.size() < 2:
 		return
 	var id := int(args[0])
-	var facing := clampi(int(args[1]), 0, 3)
-	if not _players.has(id):
-		return
-	_players[id].facing = facing
-	if _is_pending(id):
-		return
-	if engine:
-		engine.mp_set_player_facing(id, facing)
+	var dir := clampi(int(args[1]), 0, 3)
+	_mp_set_player_facing(id, dir)
 
 func _handle_speed(args: Array) -> void:
 	if args.size() < 2:
 		return
 	var id := int(args[0])
 	var speed := clampi(int(args[1]), 1, 6)
-	if not _players.has(id):
-		return
-	_players[id].speed = speed
-	if _is_pending(id):
-		return
-	if engine:
-		engine.mp_set_player_speed(id, speed)
+	_mp_set_player_speed(id, speed)
 
 func _handle_sprite(args: Array) -> void:
 	if args.size() < 3:
@@ -250,113 +235,63 @@ func _handle_sprite(args: Array) -> void:
 	var id := int(args[0])
 	var spr_name := args[1] as String
 	var index := clampi(int(args[2]), 0, 7)
-	if not _players.has(id):
-		return
-	_players[id].sprite_name = spr_name
-	_players[id].sprite_index = index
-	if _is_pending(id):
-		return
-	if engine:
-		engine.mp_set_player_sprite(id, spr_name, index)
+	_mp_set_player_sprite(id, spr_name, index)
 
 func _handle_flash(args: Array) -> void:
 	if args.size() < 6:
 		return
 	var id := int(args[0])
-	if not _players.has(id) or _is_pending(id):
-		return
-	if engine:
-		engine.mp_flash_player(id,
-			int(args[1]), int(args[2]), int(args[3]), int(args[4]), int(args[5]))
+	var r := int(args[1])
+	var g := int(args[2])
+	var b := int(args[3])
+	var power := int(args[4])
+	var frames := int(args[5])
+	_mp_flash_player(id, r, g, b, power, frames)
 
 func _handle_repeating_flash(args: Array) -> void:
 	if args.size() < 6:
 		return
 	var id := int(args[0])
-	var flash := [int(args[1]), int(args[2]), int(args[3]), int(args[4]), int(args[5])]
-	if not _players.has(id):
-		return
-	_repeating_flashes[id] = flash
-	if _is_pending(id):
-		return
-	if engine:
-		engine.mp_flash_player(id, flash[0], flash[1], flash[2], flash[3], flash[4])
+	var flash: Array[int] = [int(args[1]), int(args[2]), int(args[3]), int(args[4]), int(args[5])]
+	_mp_flash_player_repeating(id, flash)
 
 func _handle_remove_repeating_flash(args: Array) -> void:
 	if args.is_empty():
 		return
-	_repeating_flashes.erase(int(args[0]))
+	_mp_remove_player_repeating_flash(int(args[0]))
 
 func _handle_transparency(args: Array) -> void:
 	if args.size() < 2:
 		return
 	var id := int(args[0])
 	var t := clampi(int(args[1]), 0, 7)
-	if not _players.has(id):
-		return
-	_players[id].transparency = t
-	if _is_pending(id):
-		return
-	if engine:
-		engine.mp_set_player_transparency(id, t)
+	_mp_set_player_transparency(id, t)
 
 func _handle_hidden(args: Array) -> void:
 	if args.size() < 2:
 		return
 	var id := int(args[0])
 	var hidden := int(args[1]) == 1
-	if not _players.has(id):
-		return
-	_players[id].hidden = hidden
-	if _is_pending(id):
-		return
-	if engine:
-		engine.mp_set_player_hidden(id, hidden)
+	_mp_set_player_hidden(id, hidden)
 
 func _handle_system(args: Array) -> void:
 	if args.size() < 2:
 		return
 	var id := int(args[0])
 	var sys_name := args[1] as String
-	if _players.has(id):
-		_players[id].system_name = sys_name
-	if engine and engine.is_running() and engine.is_map_ready():
-		engine.mp_set_player_system_graphic(id, sys_name)
+	_mp_set_player_system_graphic(id, sys_name)
 
 func _handle_se(args: Array) -> void:
 	if args.size() < 5:
 		return
 	if not enable_sounds or mute_audio:
 		return
-	if engine == null or not engine.is_running():
-		return
-	
-	var id := int(args[0])
+	var id := args[0] as int
 	var snd_name := args[1] as String
-	var snd_volume := int(args[2])
-	var snd_tempo := int(args[3])
-	var snd_balance := int(args[4])
-	
-	if not _players.has(id):
-		return
-	var p: OtherPlayer = _players[id]
-	
-	var px := local_x
-	var py := local_y
-	var ox := p.x
-	var oy := p.y
-	var rx := px - ox
-	var ry := py - oy
-	var dist := sqrt(float(rx * rx + ry * ry))
-	if _INST_SET.has(snd_name):
-		dist = maxf(0.0, dist - 7.0)
-	
-	var dist_volume := 75.0 - dist * 10.0
-	var real_volume := maxi(int(dist_volume * float(snd_volume) / 100.0), 0)
-	if real_volume <= 0:
-		return
-	
-	engine.mp_play_se(snd_name, real_volume, snd_tempo, snd_balance)
+	var volume := args[2] as int
+	var tempo := args[3] as int
+	var balance := args[4] as int
+	_mp_play_se(id, snd_name, volume, tempo, balance)
 
 func _handle_sync_switch(args: Array) -> void:
 	if args.size() < 2:
@@ -406,11 +341,7 @@ func _handle_name(args: Array) -> void:
 		return
 	var id := int(args[0])
 	var n := args[1] as String
-	if _players.has(id):
-		_players[id].display_name = n
-		Log.debug("[MultiplayerHandler] player %d name='%s'" % [id, n])
-	if engine and engine.is_running() and engine.is_map_ready():
-		engine.mp_set_player_name(id, n)
+	_mp_set_player_name(id, n)
 
 func _handle_chat(args: Array) -> void:
 	if args.size() < 2:
@@ -420,11 +351,138 @@ func _handle_chat(args: Array) -> void:
 	if msg.length() > 100:
 		Log.warn("[MultiplayerHandler] Attempt to send message over 100 characters from PID %d" % id)
 		return
-	var display_name := "Unnamed"
+	var display_name := sender._player_name
 	if not _players.has(id):
-		if id != 0: # FIXME
+		if id != client._my_pid: # FIXME
 			Log.warn("[MultiplayerHandler] got chat message from unknown PID: %d" % id)
 			return
 	else:
 		display_name = _players[id].display_name
 	MpEvents.on_chat_message_received.emit(display_name, msg)
+	
+	
+####################################################################################################
+
+func _mp_move_player(id: int, x: int, y: int) -> void:
+	_players[id].x = x
+	_players[id].y = y
+	if _is_pending(id):
+		return
+	if engine and engine.is_running():
+		engine.mp_move_player(id, x, y)
+
+func _mp_player_jump(id: int, x: int, y: int) -> void:
+	if not _players.has(id):
+		return
+	if engine:
+		engine.mp_move_player(id, x, y)
+
+func _mp_set_player_facing(id: int, dir: int) -> void:
+	if not _players.has(id):
+		return
+	_players[id].facing = dir
+	if _is_pending(id):
+		return
+	if engine:
+		engine.mp_set_player_facing(id, dir)
+
+func _mp_set_player_speed(id: int, speed: int) -> void:
+	if not _players.has(id):
+		return
+	_players[id].speed = speed
+	if _is_pending(id):
+		return
+	if engine:
+		engine.mp_set_player_speed(id, speed)
+
+func _mp_set_player_sprite(id: int, charset_name: String, charset_index: int) -> void:
+	if not _players.has(id):
+		return
+	_players[id].sprite_name = charset_name
+	_players[id].sprite_index = charset_index
+	if _is_pending(id):
+		return
+	if engine:
+		engine.mp_set_player_sprite(id, charset_name, charset_index)
+
+func _mp_flash_player(id: int, r: int, g: int, b: int, power: int, frames: int) -> void:
+	if not _players.has(id) or _is_pending(id):
+		return
+	if engine:
+		engine.mp_flash_player(id, r, g, b, power, frames)
+
+func _mp_flash_player_repeating(id: int, flash_data: Array[int]) -> void:
+	if not _players.has(id):
+		return
+	_repeating_flashes[id] = flash_data
+	if _is_pending(id):
+		return
+	if engine:
+		engine.mp_flash_player(id, flash_data[0],flash_data[1],flash_data[2],flash_data[3],flash_data[4])
+
+func _mp_remove_player_repeating_flash(id: int) -> void:
+	_repeating_flashes.erase(id)
+
+func _mp_set_player_transparency(id: int, level: int) -> void:
+	if not _players.has(id):
+		return
+	_players[id].transparency = level
+	if _is_pending(id):
+		return
+	if engine:
+		engine.mp_set_player_transparency(id, level)
+
+func _mp_set_player_hidden(id: int, hidden: bool) -> void:
+	if not _players.has(id):
+		return
+	_players[id].hidden = hidden
+	if _is_pending(id):
+		return
+	if engine:
+		engine.mp_set_player_hidden(id, hidden)
+
+func _mp_set_player_system_graphic(id: int, sys_name: String) -> void:
+	if _players.has(id):
+		_players[id].system_name = sys_name
+	if engine and engine.is_running() and engine.is_map_ready():
+		engine.mp_set_player_system_graphic(id, sys_name)
+
+func _mp_play_se(id: int, snd_name: String, volume: int, tempo: int, balance: int) -> void:
+	if engine == null or not engine.is_running():
+		return
+	
+	if not _players.has(id):
+		return
+	var p: OtherPlayer = _players[id]
+	
+	var px := local_x
+	var py := local_y
+	var ox := p.x
+	var oy := p.y
+	var rx := px - ox
+	var ry := py - oy
+	var dist := sqrt(float(rx * rx + ry * ry))
+	if _INST_SET.has(snd_name):
+		dist = maxf(0.0, dist - 7.0)
+	
+	var dist_volume := 75.0 - dist * 10.0
+	var real_volume := maxi(int(dist_volume * float(volume) / 100.0), 0)
+	if real_volume <= 0:
+		return
+	
+	engine.mp_play_se(snd_name, real_volume, tempo, balance)
+
+func _mp_sync_switch(args: Array) -> void:
+	if args.size() < 2:
+		return
+	var sw_id := int(args[0])
+	var sync_type := int(args[1])
+	if sync_type >= 1 and sw_id not in _sync_switches:
+		_sync_switches.append(sw_id)
+
+func _mp_set_player_name(id: int, name: String) -> void:
+	if _players.has(id):
+		_players[id].display_name = name
+		Log.debug("[MultiplayerHandler] player %d name='%s'" % [id, name])
+	if engine and engine.is_running() and engine.is_map_ready():
+		engine.mp_set_player_name(id, name)

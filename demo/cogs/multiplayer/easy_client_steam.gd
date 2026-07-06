@@ -30,13 +30,13 @@ var _connection_state: int = -1
 
 var _room_id: int = -1
 var _my_pid: int = -1
-var _switching_room: bool = true
-var _switched_room: bool = false
+var _room_ready: bool = false
 var _reconnecting: bool = false
 
 func _ready() -> void:
 	sender._client = self
 	mp_handler.sender = sender
+	mp_handler.client = self
 	self.add_child(mp_handler)
 	_wire_player_signals()
 	Steam.lobby_joined.connect(_on_lobby_joined)
@@ -77,7 +77,7 @@ func send_message(type: String, args: Array = [], flags: int = Steam.NETWORKING_
 
 func switch_room(map_id: int) -> void:
 	Log.info("[EasyClient] switch_room id=%d" % map_id)
-	_switching_room = true
+	_room_ready = false
 	mp_handler.reset()
 	_room_id = map_id
 	
@@ -86,10 +86,9 @@ func switch_room(map_id: int) -> void:
 		engine.mp_set_room_id(map_id)
 	
 	if _connection_state == Steam.CONNECTION_STATE_CONNECTED:
-		Log.debug("[EasyClient] already connected - sending basic data + sr")
+		Log.debug("[EasyClient] already connected - sending sr request")
 		if engine and engine.is_running():
 			engine.mp_sync_local_player()
-		sender.send_basic_data()
 		send_message("sr", [str(map_id)])
 	else:
 		Log.debug("[EasyClient] switch_room: Not connected.")
@@ -152,8 +151,10 @@ func _handle_room_info(args: Array) -> void:
 		reconnect()
 		return
 	Log.info("[EasyClient] room %d confirmed" % room_id)
+	_room_ready = true
 	if engine and engine.is_running():
 		engine.mp_notify_room_ready()
+	sender.send_basic_data()
 
 # Client (non-host) only
 func _handle_sync_player_data(_args: Array) -> void:
@@ -161,7 +162,7 @@ func _handle_sync_player_data(_args: Array) -> void:
 	_my_pid = int(_args[1])
 	if engine and engine.is_running():
 		engine.mp_sync_local_player()
-	sender.send_basic_data()
+	_room_ready = false
 	sender._send_message("sr", [str(sender._local_room_id)])
 	sender._send_message("chaton", ["1" if enable_chat else "0"])
 

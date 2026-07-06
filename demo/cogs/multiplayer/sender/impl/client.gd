@@ -4,6 +4,8 @@ extends Sender
 var _client: EasyClientSteam
 
 func _send_message(type: String, args: Array = [], flags: int = Steam.NETWORKING_SEND_UNRELIABLE_NO_DELAY):
+	if not _client._room_ready:
+		return
 	_client.send_message(type, args, flags)
 	
 func _switching_room(old_room_id: int, new_room_id: int):

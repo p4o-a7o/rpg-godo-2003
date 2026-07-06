@@ -12,6 +12,7 @@ func _send_message(type: String, args: Array = [], flags: int = Steam.NETWORKING
 func _switching_room(old_room_id: int, new_room_id: int):
 	if not _server.is_running():
 		return
+	_server._host_switching_room(old_room_id, new_room_id)
 	var peers := _server._peers
 	var disconnect_msg := _build("d", ["0"]).to_utf8_buffer()
 	for pid in peers:

@@ -129,7 +129,35 @@ func _broadcast_local_chat_message(text: String) -> void:
 		if not cur_peer.chat_enabled:
 			continue
 		if cur_peer.room_id == sender._local_room_id:
-			_send_to(other_pid, msg, Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+			_send_to(cur_peer, msg, Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+
+func _host_spawn_other_player(peer: PeerEntry) -> void:
+	Log.debug("[EasyServer] spawning other player %s" % peer.id)
+	mp_handler._spawn_player(peer.id, true)
+	mp_handler._do_mp_add_player(peer.id)
+	mp_handler._mp_move_player(peer.id, peer.x, peer.y)
+	if peer.sprite_name != "":
+		mp_handler._mp_set_player_sprite(peer.id, peer.sprite_name, peer.sprite_idx)
+	mp_handler._mp_set_player_facing(peer.id, peer.facing)
+	mp_handler._mp_set_player_speed(peer.id, peer.speed)
+	
+	if peer.hidden:
+		mp_handler._mp_set_player_hidden(peer.id, peer.hidden)
+	if peer.transparency > 0:
+		mp_handler._mp_set_player_transparency(peer.id, peer.transparency)
+	if peer.sys_name != "":
+		mp_handler._mp_set_player_system_graphic(peer.id, peer.sys_name)
+	if peer.display_name != "":
+		mp_handler._mp_set_player_name(peer.id, peer.display_name)
+
+func _host_switching_room(old_room_id: int, new_room_id: int) -> void:
+	# resets the mp_handler to purge all the players from the
+	# previous room and then spawns all the ones in the new room
+	mp_handler.reset()
+	for pid in _peers.keys():
+		var cur_peer := _peers[pid]
+		if cur_peer.room_id == new_room_id:
+			_host_spawn_other_player(cur_peer)
 
 func _handle_relay(pid: int, entry: PeerEntry, pkt_name: String, args: Array) -> void:
 	_broadcast_to_room(entry.room_id, _build(pkt_name, [str(entry.id)] + args), pid)
@@ -157,6 +185,8 @@ func _handle_sr(pid: int, entry: PeerEntry, args: Array) -> void:
 		_broadcast_to_room(old_room, _build("d", [str(entry.id)]), pid)
 		if new_room != sender._local_room_id:
 			mp_handler._remove_player(pid)
+		else:
+			_host_spawn_other_player(entry)
 
 	entry.room_id = new_room
 	Log.info("[EasyServer] peer %d joined room %d" % [pid, new_room])
@@ -268,7 +298,7 @@ func _handle_chat(pid: int, entry: PeerEntry, args: Array) -> void:
 		if not cur_peer.chat_enabled:
 			continue
 		if cur_peer.room_id == entry.room_id:
-			_send_to(other_pid, _build("chat", [str(pid), msg]).to_utf8_buffer(), Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+			_send_to(cur_peer, _build("chat", [str(pid), msg]).to_utf8_buffer(), Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 
 func _handle_chaton(pid: int, entry: PeerEntry, args: Array) -> void:
 	if args.size() < 1:
@@ -324,9 +354,16 @@ func _receive_messages():
 		# TODO maybe remove at a later date, this is
 		# somewhat unnecessary
 		var packet_ok := true
+		var skip_mp_handling := false
 		match type:
 			"sr": _handle_sr(pid, peer, args)
-			"m", "tp": _handle_move(pid, peer, args)
+			"m", "tp":
+				# special case for making sure peer
+				# doesnt get spawned on screen even when
+				# they are not in the same room as the host
+				if peer.room_id != sender._local_room_id:
+					skip_mp_handling = true
+				_handle_move(pid, peer, args)
 			"jmp": _handle_jump(pid, peer, args)
 			"f": _handle_facing(pid, peer, args)
 			"spd": _handle_speed(pid, peer, args)
@@ -343,7 +380,7 @@ func _receive_messages():
 				Log.warn("[EasyServer] unknown packet '%s' from peer %d" % [type, pid])
 				packet_ok = false
 		
-		if packet_ok:
+		if packet_ok and not skip_mp_handling:
 			var handler_args := [ str(pid) ]
 			handler_args.append_array(args)
 			mp_handler._on_packet(type, handler_args)

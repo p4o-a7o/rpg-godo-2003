@@ -90,6 +90,7 @@ func _start_mp_client(parent: Node) -> void:
 	client_node.name = "MpNode"
 	client_node.engine = engine
 	client_node.sender._player_name = mp_name.text # lol
+	client_node.enable_chat = enable_chat.button_pressed
 	parent.add_child(client_node)
 	# nametag modes: 0=NONE, 1=CLASSIC (3-char), 2=COMPACT (full), 3=SLIM (full, small font)
 	engine.mp_set_nametag_mode(3)
