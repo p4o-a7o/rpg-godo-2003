@@ -102,9 +102,9 @@ func _send_chat_message(text: String) -> void:
 func reconnect() -> void:
 	Steam.closeConnection(_connection_handle, Steam.CONNECTION_END_APP_GENERIC, "Reconnecting", false)
 	mp_handler.reset()
+	_room_ready = false
 	await get_tree().create_timer(0.5).timeout
 	_connection_handle = Steam.connectP2P(_lobby_owner_id, 0, {})
-	
 
 func _process(delta: float) -> void:
 	if _lobby_id > 0 and _connection_handle > 0:
@@ -163,8 +163,8 @@ func _handle_sync_player_data(_args: Array) -> void:
 	if engine and engine.is_running():
 		engine.mp_sync_local_player()
 	_room_ready = false
-	sender._send_message("sr", [str(sender._local_room_id)])
-	sender._send_message("chaton", ["1" if enable_chat else "0"])
+	#sender._send_message("sr", [str(sender._local_room_id)])
+	#sender._send_message("chaton", ["1" if enable_chat else "0"])
 
 func _on_join_request(lobby_id: int, steam_id: int):
 	var friend_name := Steam.getFriendPersonaName(steam_id)
@@ -181,15 +181,21 @@ func _on_net_connection_status_changed(conn_handle: int, connection: Dictionary,
 	var new_state: int = connection["connection_state"]
 	var identity: int = connection["identity"]
 	_connection_state = new_state
+	Log.debug("[EasyClient] connection state: %s" % new_state)
+	if new_state == Steam.CONNECTION_STATE_CONNECTED:
+		Log.debug("[EasyClient] Server accepted connection, fully connected")
+		MpEvents.on_connected.emit()
+		mp_handler.mp_ready()
+		send_message("sr", [sender._local_room_id], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+		send_message("chaton", ["1" if enable_chat else "0"], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+		
 	if old_state == Steam.CONNECTION_STATE_CONNECTED:
 		if new_state == Steam.CONNECTION_STATE_CLOSED_BY_PEER:
 			Log.debug("[EasyClient] Connection closed by peer")
+			Steam.closeConnection(conn_handle, Steam.CONNECTION_END_APP_GENERIC, "", false)
 			MpEvents.on_disconnected.emit()
 			mp_handler.reset()
 	if old_state == Steam.CONNECTION_STATE_NONE:
 		if new_state == Steam.CONNECTION_STATE_CONNECTING:
-			Log.debug("[EasyClient] Server accepted connection")
-			MpEvents.on_connected.emit()
-			mp_handler.mp_ready()
-			send_message("sr", [sender._local_room_id], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
-			send_message("chaton", ["1" if enable_chat else "0"], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+			Log.debug("[EasyClient] Connecting with server")
+			# TODO (?)

@@ -44,15 +44,15 @@ static func _build(type: String, args: Array = []) -> String:
 func send_basic_data() -> void:
 	Log.debug("[Sender] sending basic data pos=(%d,%d) spr='%s'[%d]" \
 		% [_local_x, _local_y, _local_sprite_name, _local_sprite_index])
-	_send_message("m", [str(_local_x), str(_local_y)])
-	_send_message("spd", [str(_local_speed)])
-	_send_message("spr", [_sanitize(_local_sprite_name), str(_local_sprite_index)])
-	_send_message("f", [str(_local_facing)])
-	_send_message("h", [str(1 if _local_hidden else 0)])
+	_send_message("m", [str(_local_x), str(_local_y)], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+	_send_message("spd", [str(_local_speed)], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+	_send_message("spr", [_sanitize(_local_sprite_name), str(_local_sprite_index)], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+	_send_message("f", [str(_local_facing)], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+	_send_message("h", [str(1 if _local_hidden else 0)], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 	if _local_system_name != "":
-		_send_message("sys", [_sanitize(_local_system_name)])
+		_send_message("sys", [_sanitize(_local_system_name)], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 	if _player_name != "":
-		_send_message("name", [_sanitize(_player_name)])
+		_send_message("name", [_sanitize(_player_name)], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 
 func _on_local_moved(x: int, y: int) -> void:
 	_local_x = x
@@ -99,10 +99,13 @@ func _on_local_hidden(hidden: bool) -> void:
 	_send_message("h", [str(1 if hidden else 0)])
 
 func _on_local_teleported(map_id: int, x: int, y: int) -> void:
-	#Log.debug("[EasyMultiplayer] local teleported map=%d (%d,%d)" % [map_id, x, y])
+	Log.debug("[Sender] local teleported map=%d (%d,%d)" % [map_id, x, y])
+	_local_x = x
+	_local_y = y
 	_send_message("tp", [str(x), str(y)])
 
 func _on_local_se(snd_name: String, volume: int, tempo: int, balance: int) -> void:
+	# TODO fix mojibake coming back from C++
 	_send_message("se", [_sanitize(snd_name), str(volume), str(tempo), str(balance)])
 
 func _on_local_system(sys_name: String) -> void:

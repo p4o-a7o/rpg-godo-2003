@@ -163,18 +163,18 @@ func _handle_relay(pid: int, entry: PeerEntry, pkt_name: String, args: Array) ->
 	_broadcast_to_room(entry.room_id, _build(pkt_name, [str(entry.id)] + args), pid)
 
 func _send_peer_state_to(target: PeerEntry, other: PeerEntry) -> void:
-	_send_to(target, _build("m", [str(other.id), str(other.x), str(other.y)]).to_utf8_buffer())
-	_send_to(target, _build("spr", [str(other.id), other.sprite_name, str(other.sprite_idx)]).to_utf8_buffer())
-	_send_to(target, _build("f", [str(other.id), str(other.facing)]).to_utf8_buffer())
-	_send_to(target, _build("spd", [str(other.id), str(other.speed)]).to_utf8_buffer())
+	_send_to(target, _build("m", [str(other.id), str(other.x), str(other.y)]).to_utf8_buffer(), Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+	_send_to(target, _build("spr", [str(other.id), other.sprite_name, str(other.sprite_idx)]).to_utf8_buffer(), Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+	_send_to(target, _build("f", [str(other.id), str(other.facing)]).to_utf8_buffer(), Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+	_send_to(target, _build("spd", [str(other.id), str(other.speed)]).to_utf8_buffer(), Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 	if other.hidden:
-		_send_to(target, _build("h", [str(other.id), "1"]).to_utf8_buffer())
+		_send_to(target, _build("h", [str(other.id), "1"]).to_utf8_buffer(), Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 	if other.transparency > 0:
-		_send_to(target, _build("tr", [str(other.id), str(other.transparency)]).to_utf8_buffer())
+		_send_to(target, _build("tr", [str(other.id), str(other.transparency)]).to_utf8_buffer(), Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 	if other.sys_name != "":
-		_send_to(target, _build("sys", [str(other.id), other.sys_name]).to_utf8_buffer())
+		_send_to(target, _build("sys", [str(other.id), other.sys_name]).to_utf8_buffer(), Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 	if other.display_name != "":
-		_send_to(target, _build("name", [str(other.id), other.display_name]).to_utf8_buffer())
+		_send_to(target, _build("name", [str(other.id), other.display_name]).to_utf8_buffer(), Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 
 ###########################################################################################
 
@@ -186,7 +186,9 @@ func _handle_sr(pid: int, entry: PeerEntry, args: Array) -> void:
 		if new_room != sender._local_room_id:
 			mp_handler._remove_player(pid)
 		else:
-			_host_spawn_other_player(entry)
+			# queue spawn
+			mp_handler._spawn_player(pid)
+			#_host_spawn_other_player(entry)
 
 	entry.room_id = new_room
 	Log.info("[EasyServer] peer %d joined room %d" % [pid, new_room])
@@ -397,14 +399,21 @@ func _on_lobby_created(status: Steam.Result, lobby_id: int):
 func _on_net_connection_status_changed(conn_handle: int, connection: Dictionary, old_state: int):
 	var new_state: int = connection["connection_state"]
 	var identity: int = connection["identity"]
+	Log.info("[EasyServer]: Peer %s connection state changed: %s" % [identity, new_state])
+	# TODO: handle CONNECTION_STATE_PROBLEM_DETECTED_LOCALLY
 	if old_state == Steam.CONNECTION_STATE_CONNECTED:
 		if new_state == Steam.CONNECTION_STATE_CLOSED_BY_PEER:
 			# Erase him
 			# TODO
 			_on_peer_disconnected(_peers_by_handle[conn_handle])
+			Steam.closeConnection(conn_handle, Steam.CONNECTION_END_APP_GENERIC, "", false)
+	if new_state == Steam.CONNECTION_STATE_CONNECTED:
+		# i just read the docs and realizing i should probably
+		# do _on_peer_connected when the peer has actually CONNECTED...
+		Log.info("[EasyServer]: Peer %s fully connected" % identity)
+		_on_peer_connected(conn_handle, identity)
 	if old_state == Steam.CONNECTION_STATE_NONE:
 		if new_state == Steam.CONNECTION_STATE_CONNECTING:
-			print("Server: Accepting connection from %s" % identity)
+			Log.info("[EasyServer]: Accepting connection from %s" % identity)
 			Steam.acceptConnection(conn_handle)
 			Steam.setConnectionPollGroup(conn_handle, _poll_group)
-			_on_peer_connected(conn_handle, identity)
