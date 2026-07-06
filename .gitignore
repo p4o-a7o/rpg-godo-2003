@@ -1,6 +1,7 @@
 build*
 demo/addons/godotsteam/*
 demo/games/*
+demo/bin/*
 vcpkg_installed/*
 
 # Godot auto generated files
