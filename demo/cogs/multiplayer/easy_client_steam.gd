@@ -167,6 +167,18 @@ func _handle_sync_player_data(_args: Array) -> void:
 	#sender._send_message("chaton", ["1" if enable_chat else "0"])
 
 func _on_join_request(lobby_id: int, steam_id: int):
+	if lobby_id == _lobby_id:
+		Log.info("[EasyClient]: join_requested: Already in lobby %s" % lobby_id)
+		return
+	
+	if _lobby_id > 0:
+		Log.info("[EasyClient]: Joining new lobby %s, leaving and disconnecting from old lobby" % lobby_id)
+		Steam.leaveLobby(_lobby_id)
+		Steam.closeConnection(_connection_handle, Steam.CONNECTION_END_APP_GENERIC, "Disconnecting", false)
+		mp_handler.reset()
+		_room_ready = false
+		MpEvents.on_disconnected.emit()
+	
 	var friend_name := Steam.getFriendPersonaName(steam_id)
 	_lobby_id = lobby_id
 	_lobby_owner_id = steam_id

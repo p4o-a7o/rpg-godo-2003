@@ -301,6 +301,10 @@ func _handle_chat(pid: int, entry: PeerEntry, args: Array) -> void:
 			continue
 		if cur_peer.room_id == entry.room_id:
 			_send_to(cur_peer, _build("chat", [str(pid), msg]).to_utf8_buffer(), Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+	
+	if sender._local_room_id != entry.room_id:
+		return
+	MpEvents.on_chat_message_received.emit(entry.display_name, msg)
 
 func _handle_chaton(pid: int, entry: PeerEntry, args: Array) -> void:
 	if args.size() < 1:
@@ -374,7 +378,9 @@ func _receive_messages():
 			"h": _handle_hidden(pid, peer, args)
 			"sys": _handle_sys(pid, peer, args)
 			"name": _handle_name_pkt(pid, peer, args)
-			"chat": _handle_chat(pid, peer, args)
+			"chat":
+				_handle_chat(pid, peer, args)
+				skip_mp_handling = true
 			"chaton": _handle_chaton(pid, peer, args)
 			"fl","rfl","rrfl","se","ba","ap","mp","rp","ss","sv","sev":
 				_handle_relay(pid, peer, type, args)
