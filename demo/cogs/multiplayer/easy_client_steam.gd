@@ -90,7 +90,7 @@ func switch_room(map_id: int) -> void:
 		Log.debug("[EasyClient] already connected - sending sr request")
 		if engine and engine.is_running():
 			engine.mp_sync_local_player()
-		send_message("sr", [str(map_id)])
+		send_message("sr", [str(map_id)], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 	else:
 		Log.debug("[EasyClient] switch_room: Not connected.")
 
@@ -147,7 +147,13 @@ func _handle_room_info(args: Array) -> void:
 		return
 	var room_id := int(args[0])
 	if room_id != sender._local_room_id:
-		# TODO
+		# TODO: might need a debounce of some kind for this,
+		# some games have events which will switch maps rapidly
+		# back-to-back, causing it to reconnect by the time the
+		# server responds to the switch room packet.
+		#
+		# Yume 2kki does this when interacting with the PC
+		# for whatever reason...
 		Log.warn("[EasyClient] wrong room %d (expected %d), reconnecting" % [room_id, sender._local_room_id])
 		reconnect()
 		return

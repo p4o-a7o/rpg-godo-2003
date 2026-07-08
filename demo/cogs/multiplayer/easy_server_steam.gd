@@ -114,12 +114,12 @@ func _send_to(entry: PeerEntry, msg: PackedByteArray, flags: int = Steam.NETWORK
 	Log.debug("[EasyServer] TX -> peer=%d, %d bytes" % [ entry.steam_id, msg.size() ])
 	Steam.sendMessageToConnection(entry.steam_conn_handle, msg, flags)
 
-func _broadcast_to_room(room_id: int, msg: String, exclude_pid: int = -1) -> void:
+func _broadcast_to_room(room_id: int, msg: String, exclude_pid: int = -1, flags: int = Steam.NETWORKING_SEND_UNRELIABLE_NO_DELAY) -> void:
 	for pid in _peers.keys():
 		if pid == exclude_pid:
 			continue
 		if (_peers[pid] as PeerEntry).room_id == room_id:
-			_send_to(_peers[pid], msg.to_utf8_buffer())
+			_send_to(_peers[pid], msg.to_utf8_buffer(), flags)
 
 func _broadcast_local_chat_message(text: String) -> void:
 	chat_overlay.add_chat_message(sender._player_name, text)
@@ -135,21 +135,22 @@ func _broadcast_local_chat_message(text: String) -> void:
 func _host_spawn_other_player(peer: PeerEntry) -> void:
 	Log.debug("[EasyServer] spawning other player %s" % peer.id)
 	mp_handler._spawn_player(peer.id, true)
-	mp_handler._do_mp_add_player(peer.id)
+	#mp_handler._do_mp_add_player(peer.id)
 	mp_handler._mp_move_player(peer.id, peer.x, peer.y)
 	if peer.sprite_name != "":
 		mp_handler._mp_set_player_sprite(peer.id, peer.sprite_name, peer.sprite_idx)
 	mp_handler._mp_set_player_facing(peer.id, peer.facing)
 	mp_handler._mp_set_player_speed(peer.id, peer.speed)
 	
+	Log.info("%s, %s" % [peer.id, peer.sys_name])
 	if peer.hidden:
 		mp_handler._mp_set_player_hidden(peer.id, peer.hidden)
 	if peer.transparency > 0:
 		mp_handler._mp_set_player_transparency(peer.id, peer.transparency)
-	if peer.sys_name != "":
-		mp_handler._mp_set_player_system_graphic(peer.id, peer.sys_name)
 	if peer.display_name != "":
 		mp_handler._mp_set_player_name(peer.id, peer.display_name)
+	if peer.sys_name != "":
+		mp_handler._mp_set_player_system_graphic(peer.id, peer.sys_name)
 
 func _host_switching_room(old_room_id: int, new_room_id: int) -> void:
 	# resets the mp_handler to purge all the players from the
@@ -172,10 +173,10 @@ func _send_peer_state_to(target: PeerEntry, other: PeerEntry) -> void:
 		_send_to(target, _build("h", [str(other.id), "1"]).to_utf8_buffer(), Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 	if other.transparency > 0:
 		_send_to(target, _build("tr", [str(other.id), str(other.transparency)]).to_utf8_buffer(), Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
-	if other.sys_name != "":
-		_send_to(target, _build("sys", [str(other.id), other.sys_name]).to_utf8_buffer(), Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 	if other.display_name != "":
 		_send_to(target, _build("name", [str(other.id), other.display_name]).to_utf8_buffer(), Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+	if other.sys_name != "":
+		_send_to(target, _build("sys", [str(other.id), other.sys_name]).to_utf8_buffer(), Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 
 ###########################################################################################
 
@@ -188,12 +189,12 @@ func _handle_sr(pid: int, entry: PeerEntry, args: Array) -> void:
 			mp_handler._remove_player(pid)
 		else:
 			# queue spawn
-			mp_handler._spawn_player(pid)
-			#_host_spawn_other_player(entry)
+			#mp_handler._spawn_player(pid)
+			_host_spawn_other_player(entry)
 
 	entry.room_id = new_room
 	Log.info("[EasyServer] peer %d joined room %d" % [pid, new_room])
-	_send_to(entry, _build("ri", [str(new_room)]).to_utf8_buffer())
+	_send_to(entry, _build("ri", [str(new_room)]).to_utf8_buffer(), Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 	for other_pid in _peers.keys():
 		if other_pid == pid:
 			continue
@@ -203,18 +204,18 @@ func _handle_sr(pid: int, entry: PeerEntry, args: Array) -> void:
 		_send_peer_state_to(entry, other)
 	
 	# order is important
-	_broadcast_to_room(new_room, _build("m", [str(entry.id), str(entry.x), str(entry.y)]), pid)
-	_broadcast_to_room(new_room, _build("spr", [str(entry.id), entry.sprite_name, str(entry.sprite_idx)]), pid)
-	_broadcast_to_room(new_room, _build("f", [str(entry.id), str(entry.facing)]), pid)
-	_broadcast_to_room(new_room, _build("spd", [str(entry.id), str(entry.speed)]), pid)
+	_broadcast_to_room(new_room, _build("m", [str(entry.id), str(entry.x), str(entry.y)]), pid, Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+	_broadcast_to_room(new_room, _build("spr", [str(entry.id), entry.sprite_name, str(entry.sprite_idx)]), pid, Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+	_broadcast_to_room(new_room, _build("f", [str(entry.id), str(entry.facing)]), pid, Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+	_broadcast_to_room(new_room, _build("spd", [str(entry.id), str(entry.speed)]), pid, Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 	if entry.hidden:
-		_broadcast_to_room(new_room, _build("h", [str(entry.id), "1"]), pid)
+		_broadcast_to_room(new_room, _build("h", [str(entry.id), "1"]), pid, Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 	if entry.transparency > 0:
-		_broadcast_to_room(new_room, _build("tr", [str(entry.id), str(entry.transparency)]), pid)
-	if entry.sys_name != "":
-		_broadcast_to_room(new_room, _build("sys", [str(entry.id), entry.sys_name]), pid)
+		_broadcast_to_room(new_room, _build("tr", [str(entry.id), str(entry.transparency)]), pid, Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 	if entry.display_name != "":
-		_broadcast_to_room(new_room, _build("name", [str(entry.id), entry.display_name]), pid)
+		_broadcast_to_room(new_room, _build("name", [str(entry.id), entry.display_name]), pid, Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+	if entry.sys_name != "":
+		_broadcast_to_room(new_room, _build("sys", [str(entry.id), entry.sys_name]), pid, Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 	
 	# send basic data of own host
 	# TODO make it so that it only sends it

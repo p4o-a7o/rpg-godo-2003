@@ -10,6 +10,7 @@ func _send_message(type: String, args: Array = [], flags: int = Steam.NETWORKING
 	_server._broadcast_to_room(_local_room_id, _build(type, args))
 	
 func _switching_room(old_room_id: int, new_room_id: int):
+	print("switching room to ", new_room_id)
 	if not _server.is_running():
 		return
 	_server._host_switching_room(old_room_id, new_room_id)

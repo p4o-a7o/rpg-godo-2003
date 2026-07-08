@@ -49,10 +49,10 @@ func send_basic_data() -> void:
 	_send_message("spr", [_sanitize(_local_sprite_name), str(_local_sprite_index)], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 	_send_message("f", [str(_local_facing)], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 	_send_message("h", [str(1 if _local_hidden else 0)], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
-	if _local_system_name != "":
-		_send_message("sys", [_sanitize(_local_system_name)], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 	if _player_name != "":
 		_send_message("name", [_sanitize(_player_name)], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+	if _local_system_name != "":
+		_send_message("sys", [_sanitize(_local_system_name)], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 
 func _on_local_moved(x: int, y: int) -> void:
 	_local_x = x
