@@ -13,6 +13,9 @@
 #include <string>
 #include <cstdint>
 
+#include <locale>
+#include <codecvt>
+
 #include "multiplayer/mp_callbacks.h"
 
 class GodotUi; // fwd from ynoengine
@@ -107,8 +110,11 @@ private:
 	Ref<ImageTexture> frame_texture_;
 	Ref<Image> frame_image_;
 	MpCallbacks mp_callbacks_;
+	// p4o-a7o: Needed to transcode the strings so some text doesn't come out as mojibake in Godot
+	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> wstring_converter_;
 
 	void on_frame_ready(const uint8_t* pixels, int width, int height, int pitch);
+	std::wstring to_wstring(const std::string& str);
 };
 
 } // namespace godot

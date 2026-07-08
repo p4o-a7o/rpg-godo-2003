@@ -31,6 +31,9 @@
 #include <vector>
 #include <string>
 
+#include <locale>
+#include <codecvt>
+
 namespace godot {
 
 RPGMakerPlayer::RPGMakerPlayer() {}
@@ -242,6 +245,10 @@ void RPGMakerPlayer::_notification(int p_what) {
 	}
 }
 
+std::wstring RPGMakerPlayer::to_wstring(const std::string& str) {
+	return wstring_converter_.from_bytes(str);
+}
+
 void RPGMakerPlayer::set_game_path(const String& path) { game_path_ = path; }
 String RPGMakerPlayer::get_game_path() const { return game_path_; }
 
@@ -314,7 +321,8 @@ void RPGMakerPlayer::start_game() {
 			emit_signal("player_speed_changed", spd);
 		};
 		cbs.on_sprite = [this](const std::string& name, int idx) {
-			emit_signal("player_sprite_changed", String(name.c_str()), idx);
+			//emit_signal("player_sprite_changed", String(name.c_str()), idx);
+			emit_signal("player_sprite_changed", String(to_wstring(name).c_str()), idx);
 		};
 		cbs.on_jumped = [this](int x, int y) {
 			emit_signal("player_jumped", x, y);
@@ -332,10 +340,12 @@ void RPGMakerPlayer::start_game() {
 			emit_signal("player_teleported", map_id, x, y);
 		};
 		cbs.on_se = [this](const std::string& n, int vol, int tempo, int bal) {
-			emit_signal("player_se_played", String(n.c_str()), vol, tempo, bal);
+			//emit_signal("player_se_played", String(n.c_str()), vol, tempo, bal);
+			emit_signal("player_se_played", String(to_wstring(n).c_str()), vol, tempo, bal);
 		};
 		cbs.on_system = [this](const std::string& sys) {
-			emit_signal("player_system_changed", String(sys.c_str()));
+			//emit_signal("player_system_changed", String(sys.c_str()));
+			emit_signal("player_system_changed", String(to_wstring(sys).c_str()));
 		};
 		cbs.on_map_changed = [this](int map_id) {
 			emit_signal("map_changed", map_id);
