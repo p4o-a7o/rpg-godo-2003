@@ -105,7 +105,6 @@ func _on_local_teleported(map_id: int, x: int, y: int) -> void:
 	_send_message("tp", [str(x), str(y)])
 
 func _on_local_se(snd_name: String, volume: int, tempo: int, balance: int) -> void:
-	# TODO fix mojibake coming back from C++
 	_send_message("se", [_sanitize(snd_name), str(volume), str(tempo), str(balance)])
 
 func _on_local_system(sys_name: String) -> void:

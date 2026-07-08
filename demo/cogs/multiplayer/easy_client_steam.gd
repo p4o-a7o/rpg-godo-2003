@@ -9,6 +9,7 @@ var engine: RPGMakerPlayer:
 		mp_handler.engine = value
 var sender: ClientSender = ClientSender.new()
 var mp_handler: MultiplayerHandler = MultiplayerHandler.new()
+var notif_manager: NotificationMan
 var player_name: String = ""
 
 @export var enable_sounds: bool = true:
@@ -196,6 +197,10 @@ func _on_net_connection_status_changed(conn_handle: int, connection: Dictionary,
 	Log.debug("[EasyClient] connection state: %s" % new_state)
 	if new_state == Steam.CONNECTION_STATE_CONNECTED:
 		Log.debug("[EasyClient] Server accepted connection, fully connected")
+		var steam_name := Steam.getFriendPersonaName(identity)
+		notif_manager.create_notification() \
+			.set_notification_body("Joined %s's game" % steam_name) \
+			.start_timer()
 		MpEvents.on_connected.emit()
 		mp_handler.mp_ready()
 		send_message("sr", [sender._local_room_id], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
@@ -204,6 +209,10 @@ func _on_net_connection_status_changed(conn_handle: int, connection: Dictionary,
 	if old_state == Steam.CONNECTION_STATE_CONNECTED:
 		if new_state == Steam.CONNECTION_STATE_CLOSED_BY_PEER:
 			Log.debug("[EasyClient] Connection closed by peer")
+			var steam_name := Steam.getFriendPersonaName(identity)
+			notif_manager.create_notification() \
+				.set_notification_body("You were disconnected from %s's game" % steam_name) \
+				.start_timer()
 			Steam.closeConnection(conn_handle, Steam.CONNECTION_END_APP_GENERIC, "", false)
 			MpEvents.on_disconnected.emit()
 			mp_handler.reset()

@@ -4,17 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://dcw31o6ckjsa3" path="res://resources/orchidmantis_system_celestial.png" id="1_e1x85"]
 [ext_resource type="StyleBox" uid="uid://ca3cj8e1se5t3" path="res://resources/borders_texture.tres" id="2_886mr"]
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_owntx"]
-texture = ExtResource("1_e1x85")
-texture_margin_left = 8.0
-texture_margin_top = 8.0
-texture_margin_right = 8.0
-texture_margin_bottom = 8.0
-axis_stretch_horizontal = 1
-axis_stretch_vertical = 1
-region_rect = Rect2(32, 0, 32, 32)
-modulate_color = Color(0.56078434, 0.56078434, 0.56078434, 1)
-draw_center = false
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_vonln"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_886mr"]
 texture = ExtResource("1_e1x85")
@@ -41,10 +31,11 @@ axis_stretch_vertical = 1
 region_rect = Rect2(0, 0, 32, 32)
 
 [resource]
+default_font = ExtResource("1_cjfk0")
 Button/fonts/font = ExtResource("1_cjfk0")
 Button/styles/disabled = ExtResource("2_886mr")
 Button/styles/disabled_mirrored = ExtResource("2_886mr")
-Button/styles/focus = SubResource("StyleBoxTexture_owntx")
+Button/styles/focus = SubResource("StyleBoxTexture_vonln")
 Button/styles/hover = SubResource("StyleBoxTexture_886mr")
 Button/styles/hover_mirrored = ExtResource("2_886mr")
 Button/styles/hover_pressed = ExtResource("2_886mr")
@@ -60,4 +51,5 @@ MarginContainer/constants/margin_right = 4
 MarginContainer/constants/margin_top = 4
 Panel/styles/panel = SubResource("StyleBoxTexture_jyhfs")
 PanelContainer/styles/panel = SubResource("StyleBoxTexture_cjfk0")
+RichTextLabel/colors/font_shadow_color = Color(0, 0, 0, 0.11764706)
 RichTextLabel/fonts/normal_font = ExtResource("1_cjfk0")

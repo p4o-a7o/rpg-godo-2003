@@ -31,6 +31,7 @@ var engine: RPGMakerPlayer:
 		mp_handler.engine = value
 var sender: ServerSender = ServerSender.new()
 var mp_handler: MultiplayerHandler = MultiplayerHandler.new()
+var notif_manager: NotificationMan
 
 # PID 0 is reserved for the P2P host
 var _next_pid: int = 1
@@ -396,8 +397,15 @@ func _receive_messages():
 func _on_lobby_created(status: Steam.Result, lobby_id: int):
 	if status != Steam.Result.RESULT_OK:
 		Log.error("[EasyServer] Failed to create Steam lobby: code %s" % status)
+		# TODO: error details
+		notif_manager.create_notification() \
+			.set_notification_body("Failed to create a lobby! Check console for error details") \
+			.start_timer()
 		return
 	Log.info("[EasyServer] Created lobby")
+	notif_manager.create_notification() \
+		.set_notification_body("Lobby successfully created") \
+		.start_timer()
 	_listen_handle = Steam.createListenSocketP2P(0, {})
 	_poll_group = Steam.createPollGroup()
 	_lobby_id = lobby_id
@@ -410,16 +418,29 @@ func _on_net_connection_status_changed(conn_handle: int, connection: Dictionary,
 	if old_state == Steam.CONNECTION_STATE_CONNECTED:
 		if new_state == Steam.CONNECTION_STATE_CLOSED_BY_PEER:
 			# Erase him
-			# TODO
 			_on_peer_disconnected(_peers_by_handle[conn_handle])
 			Steam.closeConnection(conn_handle, Steam.CONNECTION_END_APP_GENERIC, "", false)
+			# TODO client: when clicking the reconnect button,
+			# make the client send a message to the server that it
+			# is reconnecting before it disconnects, so the server
+			# knows its just reconnecting, so it doesnt flood the host's
+			# screen with notifications for no reason
+			var steam_name := Steam.getFriendPersonaName(identity)
+			notif_manager.create_notification() \
+				.set_notification_body("%s left your game" % steam_name) \
+				.start_timer()
 	if new_state == Steam.CONNECTION_STATE_CONNECTED:
 		# i just read the docs and realizing i should probably
 		# do _on_peer_connected when the peer has actually CONNECTED...
+		var steam_name := Steam.getFriendPersonaName(identity)
+		notif_manager.create_notification() \
+			.set_notification_body("%s joined your game" % steam_name) \
+			.start_timer()
 		Log.info("[EasyServer]: Peer %s fully connected" % identity)
 		_on_peer_connected(conn_handle, identity)
 	if old_state == Steam.CONNECTION_STATE_NONE:
 		if new_state == Steam.CONNECTION_STATE_CONNECTING:
 			Log.info("[EasyServer]: Accepting connection from %s" % identity)
+			# TODO menu for accepting connection request
 			Steam.acceptConnection(conn_handle)
 			Steam.setConnectionPollGroup(conn_handle, _poll_group)

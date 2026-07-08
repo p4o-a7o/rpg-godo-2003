@@ -33,19 +33,29 @@ func _ready() -> void:
 	MpEvents.on_chat_message_received.connect(add_chat_message)
 	pass
 
+func open_chatbox() -> void:
+	chat_text_field.set_visible(true)
+	chat_text_field.grab_focus()
+	_chat_open = true
+	%NotificationsControl.pause_all_notifications()
+	%NotificationsControl.hide()
+
+func close_chatbox() -> void:
+	chat_text_field.set_visible(false)
+	chat_text_field.release_focus()
+	_chat_open = false
+	%NotificationsControl.resume_all_notifications()
+	%NotificationsControl.show()
+
 func _input(event: InputEvent) -> void:
 	if not chat_enabled:
 		return
 	if event.is_action_released("game_chat_release") and _chat_open:
-		chat_text_field.set_visible(false)
-		chat_text_field.release_focus()
-		_chat_open = false
+		close_chatbox()
 		return
 	# im doing this on released to avoid having a "t" appear in the chat box every single time
 	if event.is_action_released("game_chat_focus"):
-		chat_text_field.set_visible(true)
-		chat_text_field.grab_focus()
-		_chat_open = true
+		open_chatbox()
 		return
 
 func _process(delta: float) -> void:
@@ -70,9 +80,7 @@ func _process(delta: float) -> void:
 func _on_text_submitted(text_field) -> void:
 	MpEvents.on_chat_message_submitted.emit(chat_text_field.text)
 	chat_text_field.clear()
-	chat_text_field.set_visible(false)
-	chat_text_field.release_focus()
-	_chat_open = false
+	close_chatbox()
 
 func _delete_old_messages() -> void:
 	while chat_vbox.get_child_count() > chat_history_limit:

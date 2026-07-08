@@ -7,16 +7,17 @@
 [ext_resource type="Script" uid="uid://dypfde5jv3n8j" path="res://cogs/setup_screen.gd" id="3_tefeu"]
 [ext_resource type="Texture2D" uid="uid://dcw31o6ckjsa3" path="res://resources/orchidmantis_system_celestial.png" id="4_tbgi4"]
 [ext_resource type="Texture2D" uid="uid://8nq581ljnhf1" path="res://resources/16x16.png" id="4_tefeu"]
-[ext_resource type="Script" uid="uid://dqpdsiija51fi" path="res://cogs/toolbar.gd" id="4_trceg"]
+[ext_resource type="Script" uid="uid://dqpdsiija51fi" path="res://cogs/ui/toolbar.gd" id="4_trceg"]
 [ext_resource type="Texture2D" uid="uid://d3yo3d58cieam" path="res://resources/chat-on.png" id="5_a8y0u"]
 [ext_resource type="Texture2D" uid="uid://dvjo6m6mqrn71" path="res://resources/reconnect.png" id="5_jkv2x"]
-[ext_resource type="Script" uid="uid://dejhm7m4q1502" path="res://cogs/chat_overlay.gd" id="8_85g3d"]
+[ext_resource type="Script" uid="uid://dejhm7m4q1502" path="res://cogs/ui/chat_overlay.gd" id="8_85g3d"]
 [ext_resource type="Script" uid="uid://c7d4uy5lls8cx" path="res://cogs/game_texture.gd" id="8_tipki"]
 [ext_resource type="FontFile" uid="uid://dh8uf0t6kqv8" path="res://resources/RM2000.ttf" id="10_choun"]
 [ext_resource type="StyleBox" uid="uid://ca3cj8e1se5t3" path="res://resources/borders_texture.tres" id="10_muem4"]
 [ext_resource type="StyleBox" uid="uid://bfbanystyirf6" path="res://resources/chat_stylebox.tres" id="11_ya4ey"]
 [ext_resource type="StyleBox" uid="uid://cg3fj7teitw24" path="res://resources/chat_stylebox_focus.tres" id="12_eb6dy"]
 [ext_resource type="Texture2D" uid="uid://br4y6pwuqmyjo" path="res://resources/fullscreenv232x.png" id="12_jbj1t"]
+[ext_resource type="Script" uid="uid://2im5s87aypu" path="res://cogs/ui/notificationman.gd" id="18_dp3eg"]
 
 [sub_resource type="Gradient" id="Gradient_tbgi4"]
 offsets = PackedFloat32Array(0, 0.627907, 0.9302326, 1)
@@ -752,6 +753,40 @@ toggle_mode = true
 icon = ExtResource("12_jbj1t")
 flat = true
 icon_alignment = 1
+
+[node name="NotificationLayer" type="CanvasLayer" parent="." unique_id=1391604931]
+unique_name_in_owner = true
+
+[node name="NotificationsControl" type="Control" parent="NotificationLayer" unique_id=41663212]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("18_dp3eg")
+
+[node name="MarginContainer" type="MarginContainer" parent="NotificationLayer/NotificationsControl" unique_id=17299097]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="NotificationList" type="VBoxContainer" parent="NotificationLayer/NotificationsControl/MarginContainer" unique_id=1674012328]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+alignment = 2
 
 [node name="ChatOverlayLayer" type="CanvasLayer" parent="." unique_id=1353566743]
 unique_name_in_owner = true

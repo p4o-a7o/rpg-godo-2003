@@ -26,7 +26,6 @@ func get_sdr_availability() -> int:
 	return _sdr_network_code
 
 func _ready():
-	_try_init_steam()
 	Steam.relay_network_status.connect(_on_relay_network_status)
 
 func force_retry():
@@ -36,7 +35,9 @@ func force_retry():
 	_try_init_steam()
 
 func _try_init_steam():
-	var res := Steam.steamInitEx(650700)
+	# YN steam app ID is 650700
+	# testing app ID is 480
+	var res := Steam.steamInitEx(480)
 	_status_code = res.status
 	_status_verbal = res.verbal
 	if not res.verbal:

@@ -55,6 +55,13 @@ func _ready() -> void:
 	audio_slider.value_changed.connect(_on_audio_volume_changed)
 	save_and_run.pressed.connect(_on_save_and_run)
 	
+	Steamworks.steam_connected.connect(func():
+		var notif: Notification = %NotificationsControl.create_notification()
+		notif.set_notification_body("Connected to Steam")
+		notif.start_timer()
+	)
+	Steamworks._try_init_steam()
+	
 	#if args.has("--autorun") or run_on_start.button_pressed:
 	#	_launch_game()
 
@@ -73,6 +80,9 @@ func _start_mp_server(parent: Node) -> void:
 	server_node = EasyServerSteam.new()
 	server_node.name = "MpServerNode"
 	server_node.engine = engine
+	# TODO Why the fuck does the unique node path
+	# just not work in these classes? why???
+	server_node.notif_manager = %NotificationsControl
 	parent.add_child(server_node)
 	if not server_node.start():
 		Log.error("[setup_screen] Failed to start server for some reason")
@@ -91,6 +101,7 @@ func _start_mp_client(parent: Node) -> void:
 	client_node.engine = engine
 	client_node.sender._player_name = mp_name.text # lol
 	client_node.enable_chat = enable_chat.button_pressed
+	client_node.notif_manager = %NotificationsControl
 	parent.add_child(client_node)
 	# nametag modes: 0=NONE, 1=CLASSIC (3-char), 2=COMPACT (full), 3=SLIM (full, small font)
 	engine.mp_set_nametag_mode(3)
