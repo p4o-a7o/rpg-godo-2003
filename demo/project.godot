@@ -27,12 +27,18 @@ Transition="*uid://cxbmv4cldqgdq"
 LimboConsole="*uid://cisblm1xppxgv"
 MpEvents="*uid://eyv6bsvkkdxi"
 Steamworks="*uid://dah8mqmtwwkum"
+UIThemeUpdater="*uid://tnwru7coav82"
+
+[debug]
+
+file_logging/enable_file_logging=true
 
 [display]
 
 window/size/viewport_width=640
 window/size/viewport_height=480
 window/stretch/mode="canvas_items"
+window/stretch/scale_mode="integer"
 
 [editor_plugins]
 

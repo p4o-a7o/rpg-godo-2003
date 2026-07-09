@@ -3,7 +3,7 @@
 [ext_resource type="FontFile" uid="uid://dh8uf0t6kqv8" path="res://resources/RM2000.ttf" id="1_126oj"]
 [ext_resource type="StyleBox" uid="uid://ca3cj8e1se5t3" path="res://resources/borders_texture.tres" id="2_33inb"]
 [ext_resource type="Texture2D" uid="uid://dcw31o6ckjsa3" path="res://resources/orchidmantis_system_celestial.png" id="3_ev2ac"]
-[ext_resource type="StyleBox" uid="uid://wmf6j74yn5pb" path="res://resources/borders_texture_4px_margin.tres" id="4_33inb"]
+[ext_resource type="StyleBox" uid="uid://wmf6j74yn5pb" path="res://resources/borders_texture_no_margin.tres" id="4_33inb"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_vonln"]
 

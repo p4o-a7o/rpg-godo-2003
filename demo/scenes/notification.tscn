@@ -29,21 +29,20 @@ _progress_bar = NodePath("ProgressBarGradient")
 modulate = Color(1, 1, 1, 0.2)
 z_index = -1
 layout_mode = 0
-offset_left = 4.0
-offset_top = 4.0
-offset_right = 263.0
-offset_bottom = 38.0
+offset_left = 1.0
+offset_top = 1.0
+offset_right = 266.0
+offset_bottom = 41.0
 texture = SubResource("AtlasTexture_j6hwb")
 expand_mode = 1
-metadata/_edit_use_anchors_ = true
 
 [node name="PanelContainer" type="PanelContainer" parent="." unique_id=1487653491]
 z_index = -2
 layout_mode = 0
-offset_left = 4.0
-offset_top = 4.0
-offset_right = 263.0
-offset_bottom = 38.0
+offset_left = 1.0
+offset_top = 1.0
+offset_right = 266.0
+offset_bottom = 41.0
 mouse_filter = 1
 theme = ExtResource("2_mfwk2")
 

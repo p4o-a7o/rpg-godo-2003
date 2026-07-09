@@ -61,6 +61,7 @@ func _ready() -> void:
 		notif.start_timer()
 	)
 	Steamworks._try_init_steam()
+	UIThemeUpdater.game_path = game_path.text
 	
 	#if args.has("--autorun") or run_on_start.button_pressed:
 	#	_launch_game()
@@ -120,6 +121,7 @@ func _on_browse_pressed() -> void:
 
 func _on_dir_selected(dir: String) -> void:
 	game_path.text = dir
+	UIThemeUpdater.game_path = dir
 
 func _on_audio_volume_changed(value: float) -> void:
 	AudioServer.set_bus_volume_db(
@@ -215,6 +217,8 @@ func _launch_game() -> void:
 			_start_mp_server(self)
 		else:
 			_start_mp_client(engine)
+	
+	UIThemeUpdater.connect_to_engine(engine)
 
 
 func _on_mp_enable_toggled(toggled_on: bool) -> void:

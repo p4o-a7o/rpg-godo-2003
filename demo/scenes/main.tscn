@@ -682,19 +682,22 @@ grow_horizontal = 2
 mouse_filter = 1
 script = ExtResource("4_trceg")
 
-[node name="ToolbarDimmer" type="ColorRect" parent="ToolbarLayer/ToolbarRoot" unique_id=1115048541]
+[node name="ToolbarDimmer" type="Panel" parent="ToolbarLayer/ToolbarRoot" unique_id=237439607]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 10
+anchors_preset = 15
 anchor_right = 1.0
-offset_left = 2.0
-offset_right = -2.0
-offset_bottom = 52.0
+anchor_bottom = 1.0
+offset_left = 1.0
+offset_top = 1.0
+offset_right = -1.0
+offset_bottom = -11.0
 grow_horizontal = 2
-offset_transform_enabled = true
-offset_transform_position = Vector2(0, 2)
+grow_vertical = 2
+offset_transform_position = Vector2(1, 1)
+offset_transform_visual_only = false
 mouse_filter = 2
-color = Color(0, 0, 0, 0.49803922)
+theme = ExtResource("2_sugp2")
 
 [node name="PanelContainer" type="PanelContainer" parent="ToolbarLayer/ToolbarRoot" unique_id=335515382]
 unique_name_in_owner = true
