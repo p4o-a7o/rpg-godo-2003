@@ -69,7 +69,7 @@ func _read_system_graphic(file_path: String) -> ImageTexture:
 		cursor += 4
 		var chunk_type_bytes := sys_blob.slice(cursor, cursor + 4)
 		cursor += 4
-		Log.debug("Chunk size: %d bytes, Chunk type code: %s" % [chunk_size, chunk_type_bytes.get_string_from_ascii()])
+		#Log.debug("Chunk size: %d bytes, Chunk type code: %s" % [chunk_size, chunk_type_bytes.get_string_from_ascii()])
 		var chunk_data := sys_blob.slice(cursor, cursor + chunk_size)
 		if is_header_chunk(chunk_type_bytes):
 			var color_type: int = chunk_data.decode_u8(9)
@@ -159,11 +159,3 @@ func connect_to_engine(engine: RPGMakerPlayer) -> void:
 	if connected_to_game:
 		return
 	engine.player_system_changed.connect(update_menu_theme)
-
-# Called when the node enters the scene tree for the first time.
-func _ready() -> void:
-	print()
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass
