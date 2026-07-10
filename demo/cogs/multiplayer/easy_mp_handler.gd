@@ -1,9 +1,10 @@
-class_name MultiplayerHandler
 extends Node
 
 var sender: Sender
-var client: EasyClientSteam
-var engine: RPGMakerPlayer
+var engine: RPGMakerPlayer:
+	set(value):
+		engine = value
+		_wire_player_signals()
 
 var enable_sounds: bool = true
 var enable_chat: bool = false
@@ -12,6 +13,7 @@ var moving_queue_limit: int = 4
 
 var local_x: int = 0
 var local_y: int = 0
+var player_name: String = ""
 
 class OtherPlayer:
 	var id: int = -1
@@ -63,7 +65,6 @@ func mp_ready() -> void:
 	engine.mp_notify_room_ready()
 	engine.mp_set_session_active(true)
 	engine.mp_sync_local_player()
-	pass
 
 func reset() -> void:
 	if engine and engine.is_running():
@@ -82,6 +83,13 @@ func reset() -> void:
 	_frame_index = 0
 	_last_flash_frame_index = -1
 	_last_frame_flash = []
+
+func _wire_player_signals() -> void:
+	engine.player_moved.connect(_on_local_moved)
+
+func _on_local_moved(x: int, y: int) -> void:
+	local_x = x
+	local_y = y
 
 func _on_packet(type: String, args: Array) -> void:
 	match type:
@@ -351,9 +359,9 @@ func _handle_chat(args: Array) -> void:
 	if msg.length() > 100:
 		Log.warn("[MultiplayerHandler] Attempt to send message over 100 characters from PID %d" % id)
 		return
-	var display_name := sender._player_name
+	var display_name := player_name
 	if not _players.has(id):
-		if id != client._my_pid: # FIXME
+		if id != EasyClientSteam._my_pid: # FIXME
 			Log.warn("[MultiplayerHandler] got chat message from unknown PID: %d" % id)
 			return
 	else:

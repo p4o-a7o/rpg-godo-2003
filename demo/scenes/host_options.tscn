@@ -1,0 +1,215 @@
+[gd_scene format=3 uid="uid://dgjca14i3u38a"]
+
+[ext_resource type="Theme" uid="uid://dx13y3513lj8e" path="res://resources/theme.tres" id="1_3btpn"]
+[ext_resource type="Texture2D" uid="uid://dcw31o6ckjsa3" path="res://resources/orchidmantis_system_celestial.png" id="1_cdfe3"]
+[ext_resource type="Script" uid="uid://de7nx8ltynvby" path="res://cogs/ui/host_options.gd" id="2_3urtl"]
+[ext_resource type="Theme" uid="uid://bx3jpai6atnuv" path="res://resources/sys_gradient.tres" id="3_3urtl"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_n87br"]
+atlas = ExtResource("1_cdfe3")
+region = Rect2(0, 32, 16, 16)
+
+[node name="HostOptions" type="Control" unique_id=1364613324]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_3btpn")
+script = ExtResource("2_3urtl")
+
+[node name="BG" type="TextureRect" parent="." unique_id=1530824825]
+z_index = -2
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = SubResource("AtlasTexture_n87br")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1882783821]
+custom_minimum_size = Vector2(215, 160)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -4.0
+offset_top = -6.0
+offset_right = 4.0
+offset_bottom = 6.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Header" type="RichTextLabel" parent="VBoxContainer" unique_id=1143494228]
+clip_children = 1
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+bbcode_enabled = true
+text = "Host Options"
+fit_content = true
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TextureRect" type="Panel" parent="VBoxContainer/Header" unique_id=686968470]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("3_3urtl")
+metadata/_edit_use_anchors_ = true
+
+[node name="OptionsPanel" type="Button" parent="VBoxContainer" unique_id=1467927933]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/OptionsPanel" unique_id=1029209004]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_right = 4
+
+[node name="PanelContainer" type="PanelContainer" parent="VBoxContainer/OptionsPanel/MarginContainer" unique_id=1589188252]
+z_index = -1
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/OptionsPanel/MarginContainer/PanelContainer" unique_id=1059208417]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/OptionsPanel/MarginContainer/PanelContainer/MarginContainer" unique_id=1741189453]
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/OptionsPanel/MarginContainer/PanelContainer/MarginContainer/VBoxContainer" unique_id=197162006]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/OptionsPanel/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/MarginContainer" unique_id=1526499118]
+layout_mode = 2
+alignment = 1
+
+[node name="Control" type="Control" parent="VBoxContainer/OptionsPanel/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/MarginContainer/VBoxContainer" unique_id=1601426451]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+
+[node name="RichTextLabel" type="RichTextLabel" parent="VBoxContainer/OptionsPanel/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/MarginContainer/VBoxContainer/Control" unique_id=1412822030]
+clip_children = 1
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 1
+anchors_preset = 14
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_top = -6.5
+offset_bottom = 6.5
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 0
+bbcode_enabled = true
+text = "Max Players"
+fit_content = true
+autowrap_mode = 0
+vertical_alignment = 1
+
+[node name="TextureRect" type="Panel" parent="VBoxContainer/OptionsPanel/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/MarginContainer/VBoxContainer/Control/RichTextLabel" unique_id=1336320233]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("3_3urtl")
+metadata/_edit_use_anchors_ = true
+
+[node name="LbMaxPlayers" type="SpinBox" parent="VBoxContainer/OptionsPanel/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/MarginContainer/VBoxContainer/Control" unique_id=1343150423]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(110, 0)
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -50.0
+offset_top = -10.5
+offset_bottom = 10.5
+grow_horizontal = 0
+grow_vertical = 2
+size_flags_horizontal = 8
+value = 10.0
+suffix = "players"
+
+[node name="Control2" type="Control" parent="VBoxContainer/OptionsPanel/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/MarginContainer/VBoxContainer" unique_id=435211941]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+
+[node name="RichTextLabel" type="RichTextLabel" parent="VBoxContainer/OptionsPanel/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/MarginContainer/VBoxContainer/Control2" unique_id=499905211]
+clip_children = 1
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 1
+anchors_preset = 14
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_top = -6.5
+offset_bottom = 6.5
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 0
+bbcode_enabled = true
+text = "Disable Joining"
+fit_content = true
+autowrap_mode = 0
+vertical_alignment = 1
+
+[node name="TextureRect" type="Panel" parent="VBoxContainer/OptionsPanel/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/MarginContainer/VBoxContainer/Control2/RichTextLabel" unique_id=125805541]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("3_3urtl")
+metadata/_edit_use_anchors_ = true
+
+[node name="LbDisableJoining" type="CheckBox" parent="VBoxContainer/OptionsPanel/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/MarginContainer/VBoxContainer/Control2" unique_id=408550627]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -32.0
+offset_top = -16.0
+offset_bottom = 16.0
+grow_horizontal = 0
+grow_vertical = 2
+tooltip_text = "Disables joining through Steam friends list.
+Players will only be able to join through an invite."
+
+[node name="ButtonList" type="HBoxContainer" parent="VBoxContainer" unique_id=937532246]
+layout_mode = 2
+alignment = 2
+
+[node name="HostButton" type="Button" parent="VBoxContainer/ButtonList" unique_id=565964404]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "Host"
+
+[node name="BackButton" type="Button" parent="VBoxContainer/ButtonList" unique_id=1861393129]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "Back"
+
+[connection signal="pressed" from="VBoxContainer/ButtonList/HostButton" to="." method="_host_pressed"]

@@ -6,3 +6,4 @@ signal on_chat_message_submitted(text: String)
 
 signal on_connected()
 signal on_disconnected()
+signal on_server_started()

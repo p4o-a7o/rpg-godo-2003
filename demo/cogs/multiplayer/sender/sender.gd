@@ -25,8 +25,6 @@ var _local_facing: int = 2
 var _local_hidden: bool = false
 var _local_system_name: String = ""
 
-var _player_name: String = ""
-
 const PARAM_DELIM := "\uFFFF" # separates fields within one message
 
 func _sanitize(s: String) -> String:
@@ -49,8 +47,8 @@ func send_basic_data() -> void:
 	_send_message("spr", [_sanitize(_local_sprite_name), str(_local_sprite_index)], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 	_send_message("f", [str(_local_facing)], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 	_send_message("h", [str(1 if _local_hidden else 0)], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
-	if _player_name != "":
-		_send_message("name", [_sanitize(_player_name)], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+	if MultiplayerHandler.player_name != "":
+		_send_message("name", [_sanitize(MultiplayerHandler.player_name)], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 	if _local_system_name != "":
 		_send_message("sys", [_sanitize(_local_system_name)], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 

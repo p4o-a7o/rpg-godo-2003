@@ -1,0 +1,75 @@
+[gd_scene format=3 uid="uid://qfkh1xcq4mhv"]
+
+[ext_resource type="Theme" uid="uid://th0sddt12pwm" path="res://resources/theme_outlined_panel.tres" id="1_xxlx2"]
+[ext_resource type="Script" uid="uid://r8x0v3iruh2m" path="res://cogs/ui/lobby_browser_item.gd" id="2_xxlx2"]
+[ext_resource type="Theme" uid="uid://bx3jpai6atnuv" path="res://resources/sys_gradient.tres" id="3_xxlx2"]
+
+[node name="PlayerLobbyItem" type="PanelContainer" unique_id=1356507867]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 37.0
+grow_horizontal = 2
+size_flags_horizontal = 3
+theme = ExtResource("1_xxlx2")
+script = ExtResource("2_xxlx2")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1805051105]
+layout_mode = 2
+
+[node name="PlayerName" type="RichTextLabel" parent="MarginContainer" unique_id=1153902720]
+clip_children = 1
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+bbcode_enabled = true
+text = "Someone's Lobby"
+fit_content = true
+scroll_active = false
+autowrap_mode = 0
+vertical_alignment = 1
+
+[node name="TextureRect" type="Panel" parent="MarginContainer/PlayerName" unique_id=677268585]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("3_xxlx2")
+metadata/_edit_use_anchors_ = true
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer" unique_id=1418291086]
+layout_mode = 2
+size_flags_horizontal = 8
+
+[node name="PlayerCount" type="RichTextLabel" parent="MarginContainer/HBoxContainer" unique_id=1248324786]
+clip_children = 1
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+bbcode_enabled = true
+text = "?/?"
+fit_content = true
+scroll_active = false
+autowrap_mode = 0
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TextureRect" type="Panel" parent="MarginContainer/HBoxContainer/PlayerCount" unique_id=518020667]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("3_xxlx2")
+metadata/_edit_use_anchors_ = true
+
+[node name="JoinButton" type="Button" parent="MarginContainer/HBoxContainer" unique_id=1483240555]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+size_flags_horizontal = 10
+text = "Join"
+
+[connection signal="pressed" from="MarginContainer/HBoxContainer/JoinButton" to="." method="_on_join_button_pressed"]

@@ -1,3 +1,4 @@
+class_name SetupScreen
 extends Control
 
 @onready var godot_menu_layer: CanvasLayer = %GodotMenuLayer
@@ -6,23 +7,23 @@ extends Control
 @onready var game_path_button: Button = %GamePathButton
 @onready var game_path_file_dialog: FileDialog = %GamePathFileDialog
 @onready var audio_slider: HSlider = %AudioSlider
-@onready var mp_enable: CheckBox = %MpEnable
 @onready var mp_name: LineEdit = %MpName
-@onready var mp_host_lobby: CheckBox = %MpHostLobby
-@onready var save_and_run: Button = %SaveAndRun
+@onready var save_and_host: Button = %SaveAndHost
+@onready var save_and_join: Button = %SaveAndJoin
 @onready var enable_chat: CheckBox = %EnableChat
 @onready var chat_ctrl: ChatOverlay = %ChatControl
 @onready var chat_layer: CanvasLayer = %ChatOverlayLayer
 @onready var chat_vbox: VBoxContainer = %MessageContainer
 @onready var chat_field: LineEdit = %ChatField
 @onready var window_scale: OptionButton = %WindowScale
+@onready var lobby_browser: LobbyBrowser = %LobbyBrowser
+@onready var host_options: HostOptionsScreen = %HostOptions
+@onready var setup_controls: Node = %SetupControls
 
 @export var engine: Node
 
 const _SETTINGS_PATH := "user://main_settings.cfg"
 
-var client_node: EasyClientSteam = null
-var server_node: EasyServerSteam = null
 var _watch_timer: Timer = null
 
 func _ready() -> void:
@@ -41,7 +42,6 @@ func _ready() -> void:
 	audio_slider.max_value = 100.0
 	audio_slider.step = 5.0
 	audio_slider.value = cfg.get_value("audio", "volume", 80.0)
-	mp_enable.button_pressed = cfg.get_value("multiplayer", "enabled", false)
 	mp_name.text = cfg.get_value("multiplayer", "name", "Minnatsuki")
 	window_scale.selected = cfg.get_value("game", "window_scale", 0)
 	enable_chat.button_pressed = cfg.get_value("multiplayer", "enable_chat", false)
@@ -53,7 +53,8 @@ func _ready() -> void:
 	game_path_button.pressed.connect(_on_browse_pressed)
 	game_path_file_dialog.dir_selected.connect(_on_dir_selected)
 	audio_slider.value_changed.connect(_on_audio_volume_changed)
-	save_and_run.pressed.connect(_on_save_and_run)
+	save_and_host.pressed.connect(_on_save_and_host)
+	save_and_join.pressed.connect(_on_save_and_join)
 	
 	Steamworks.steam_connected.connect(func():
 		var notif: Notification = %NotificationsControl.create_notification()
@@ -63,6 +64,12 @@ func _ready() -> void:
 	Steamworks._try_init_steam()
 	UIThemeUpdater.game_path = game_path.text
 	
+	# TODO Why the fuck does the unique node path
+	# just not work in these classes? why???
+	EasyServerSteam.notif_manager = %NotificationsControl
+	EasyClientSteam.notif_manager = %NotificationsControl
+	EasyClientSteam.engine = engine
+	EasyServerSteam.engine = engine
 	#if args.has("--autorun") or run_on_start.button_pressed:
 	#	_launch_game()
 
@@ -73,37 +80,22 @@ func _on_relay_status(available: bool, status_code: int, debug_message: String) 
 	else:
 		%AvailabilityText.text = "Multiplayer availability check failed with message: %s (Code: %s)" % [debug_message, status_code]
 
-func _start_mp_server(parent: Node) -> void:
-	if server_node:
-		server_node.stop()
-		server_node.queue_free()
-		server_node = null
-	server_node = EasyServerSteam.new()
-	server_node.name = "MpServerNode"
-	server_node.engine = engine
-	# TODO Why the fuck does the unique node path
-	# just not work in these classes? why???
-	server_node.notif_manager = %NotificationsControl
-	parent.add_child(server_node)
-	if not server_node.start():
+func _start_mp_server() -> void:
+	if EasyServerSteam.is_running():
+		EasyServerSteam.stop()
+	EasyServerSteam.name = "MpServerNode"
+	EasyServerSteam.engine = engine
+	if not EasyServerSteam.start():
 		Log.error("[setup_screen] Failed to start server for some reason")
-		server_node.queue_free()
-		server_node = null
-	server_node.sender._player_name = mp_name.text # lol
-	server_node.chat_overlay = chat_ctrl
+	EasyServerSteam.chat_overlay = chat_ctrl
 	# You are the host so theres no point in being able
 	# to click the reload button, in fact, it would not do anything
 	%ReconnectButton.disabled = true
 
-func _start_mp_client(parent: Node) -> void:
+func _start_mp_client() -> void:
 	%ReconnectButton.disabled = false
-	client_node = EasyClientSteam.new()
-	client_node.name = "MpNode"
-	client_node.engine = engine
-	client_node.sender._player_name = mp_name.text # lol
-	client_node.enable_chat = enable_chat.button_pressed
-	client_node.notif_manager = %NotificationsControl
-	parent.add_child(client_node)
+	EasyClientSteam.engine = engine
+	EasyClientSteam.enable_chat = enable_chat.button_pressed
 	# nametag modes: 0=NONE, 1=CLASSIC (3-char), 2=COMPACT (full), 3=SLIM (full, small font)
 	engine.mp_set_nametag_mode(3)
 	
@@ -113,7 +105,7 @@ func _start_server_only() -> void:
 	for arg in OS.get_cmdline_args():
 		if arg.begins_with("--port="):
 			port = int(arg.substr(7))"""
-	_start_mp_server(self)
+	_start_mp_server()
 	
 
 func _on_browse_pressed() -> void:
@@ -129,17 +121,27 @@ func _on_audio_volume_changed(value: float) -> void:
 		linear_to_db(value / 100.0)
 	)
 
-func _on_save_and_run() -> void:
-	save_and_run.disabled = true
+# TODO: nudge game path box when its empty or invalid
+
+func _on_save_and_host() -> void:
 	_save_settings()
-	Transition.custom(_launch_game, TransitionPresets.get_slow_fade())
+	%SetupControls.hide()
+	host_options.previous_screen = %SetupControls
+	host_options.show()
+
+func _on_save_and_join() -> void:
+	%SetupControls.hide()
+	_save_settings()
+	lobby_browser.previous_screen = %SetupControls
+	lobby_browser.show()
+	lobby_browser.refresh()
+	
 
 func _save_settings() -> void:
 	var cfg := ConfigFile.new()
 	cfg.set_value("game",        "path",         game_path.text.strip_edges())
 	cfg.set_value("game",        "window_scale", window_scale.selected)
 	cfg.set_value("audio",       "volume",       audio_slider.value)
-	cfg.set_value("multiplayer", "enabled",      mp_enable.button_pressed)
 	cfg.set_value("multiplayer", "name",         mp_name.text.strip_edges())
 	cfg.set_value("multiplayer", "enable_chat",  enable_chat.button_pressed)
 	cfg.save(_SETTINGS_PATH)
@@ -167,23 +169,22 @@ func _on_engine_stopped() -> void:
 	Transition.outro()
 	godot_menu_layer.visible = true
 	engine_layer.visible     = false
-	save_and_run.disabled = false
-	if client_node:
-		client_node.close_connection()
-		client_node.queue_free()
-		client_node = null
-	if server_node:
-		server_node.stop()
-		server_node.queue_free()
-		server_node = null
+	save_and_join.disabled = false
+	save_and_host.disabled = false
+	if EasyClientSteam.client_connected():
+		EasyClientSteam.close_connection()
+	if EasyServerSteam.is_running():
+		EasyServerSteam.stop()
 	chat_ctrl.disable_overlay()
 	%ToolbarLayer.visible = false
 
-func _launch_game() -> void:
+func _launch_game(host: bool = false) -> void:
 	var path := game_path.text.strip_edges()
 	if path.is_empty():
 		push_warning("[main] Game path is empty")
 		return
+	
+	MultiplayerHandler.player_name = mp_name.text
 	
 	engine.set_game_path(path)
 	_on_audio_volume_changed(audio_slider.value)
@@ -204,19 +205,14 @@ func _launch_game() -> void:
 	
 	_start_engine_watcher()
 	
-	if mp_enable.button_pressed:
-		if client_node:
-			client_node.close_connection()
-			client_node.queue_free()
-		if server_node:
-			server_node.stop()
-			server_node.queue_free()
-			server_node = null
-		
-		if mp_host_lobby.button_pressed:
-			_start_mp_server(self)
-		else:
-			_start_mp_client(engine)
+	if host:
+		if EasyClientSteam.client_connected():
+			EasyClientSteam.close_connection()
+		_start_mp_server()
+	else:
+		if EasyServerSteam.is_running():
+			EasyServerSteam.stop()
+		_start_mp_client()
 	
 	UIThemeUpdater.connect_to_engine(engine)
 

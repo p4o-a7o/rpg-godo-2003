@@ -1,0 +1,6 @@
+[gd_resource type="Theme" format=3 uid="uid://bx3jpai6atnuv"]
+
+[ext_resource type="StyleBox" uid="uid://dt48xqjkilgep" path="res://resources/system_graphic_gradient_tex.tres" id="1_phpcm"]
+
+[resource]
+Panel/styles/panel = ExtResource("1_phpcm")

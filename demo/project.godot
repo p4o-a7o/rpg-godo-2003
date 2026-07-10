@@ -28,6 +28,9 @@ LimboConsole="*uid://cisblm1xppxgv"
 MpEvents="*uid://eyv6bsvkkdxi"
 Steamworks="*uid://dah8mqmtwwkum"
 UIThemeUpdater="*uid://tnwru7coav82"
+EasyClientSteam="*uid://bl81k06n1ewwq"
+EasyServerSteam="*uid://703mt2r5k3xs"
+MultiplayerHandler="*uid://b1titsfg012en"
 
 [debug]
 

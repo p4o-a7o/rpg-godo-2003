@@ -18,6 +18,9 @@ func _ready() -> void:
 	
 	MpEvents.on_connected.connect(_multiplayer_connected)
 	MpEvents.on_disconnected.connect(_multiplayer_disconnected)
+	# p4o-a7o: ill just make this an event so i dont have to do some
+	# weird ass node fiddling nonsense
+	MpEvents.on_server_started.connect(_disable_reconnect_button)
 
 var active_tween: Tween
 func stop_tween():
@@ -76,12 +79,16 @@ func _on_mouse_exited() -> void:
 	hide_toolbar()
 
 func _multiplayer_connected():
+	%ReconnectButton.disabled = false
 	%ReconnectButton.icon = tex_reconnect_on
 	%ReconnectButton.modulate = Color(0.5, 1.0, 0.5)
 	
 func _multiplayer_disconnected():
 	%ReconnectButton.icon = tex_reconnect_off
 	%ReconnectButton.modulate = Color(1.0, 0.33, 0.33)
+
+func _disable_reconnect_button():
+	%ReconnectButton.disabled = true
 
 func _on_chat_toggle_toggled(toggled_on: bool) -> void:
 	%ChatToggle.icon = tex_chat_on if toggled_on else tex_chat_off
@@ -90,11 +97,7 @@ func _on_chat_toggle_toggled(toggled_on: bool) -> void:
 		Log.warn("Toolbar: Chat button pressed but no game is running!")
 		return
 	
-	var mp_node := engine.get_node_or_null("./MpNode") as EasyClientSteam
-	if not mp_node:
-		return
-	
-	mp_node.set_enable_chat(toggled_on)
+	EasyClientSteam.set_enable_chat(toggled_on)
 	if toggled_on:
 		%ChatControl.enable_overlay()
 	else:
@@ -106,13 +109,15 @@ func _on_reconnect_button_pressed() -> void:
 		Log.warn("Toolbar: Reconnect requested but no game is running!")
 		return
 	
-	var mp_node := engine.get_node_or_null("./MpNode") as EasyClientSteam
-	if not mp_node:
+	if EasyServerSteam.is_running():
 		return
+	if not EasyClientSteam.client_connected():
+		return
+
 	Log.debug("Toolbar: Reconnect requested")
 	%ReconnectButton.icon = tex_reconnect_off
 	%ReconnectButton.modulate = Color(1.0, 0.7, 0.33)
-	mp_node.reconnect()
+	EasyClientSteam.reconnect()
 
 func _on_fullscreen_toggled(toggled_on: bool) -> void:
 	_fullscreen(toggled_on)

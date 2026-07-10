@@ -1,7 +1,8 @@
-class_name EasyServerSteam
 extends Node
 
 @export var auto_start: bool = false
+@export var max_players: int = 10
+@export var joinable: bool = true
 
 var chat_overlay: ChatOverlay
 const PARAM_DELIM := "\uFFFF" # separates fields within one message
@@ -28,9 +29,12 @@ class PeerEntry:
 var engine: RPGMakerPlayer:
 	set(value):
 		engine = value
-		mp_handler.engine = value
+		MultiplayerHandler.engine = value
+		_wire_player_signals()
+		engine.mp_notify_room_ready()
+		engine.mp_set_session_active(true)
+		engine.mp_sync_local_player()
 var sender: ServerSender = ServerSender.new()
-var mp_handler: MultiplayerHandler = MultiplayerHandler.new()
 var notif_manager: NotificationMan
 
 # PID 0 is reserved for the P2P host
@@ -48,16 +52,9 @@ var _peers_by_handle: Dictionary[int, PeerEntry] = {}
 func _ready() -> void:
 	Steam.network_connection_status_changed.connect(_on_net_connection_status_changed)
 	Steam.lobby_created.connect(_on_lobby_created)
+	Steam.join_requested.connect(_on_join_request)
 	if auto_start:
 		start()
-	sender._server = self
-	mp_handler.sender = sender
-	self.add_child(mp_handler)
-	_wire_player_signals()
-	engine.mp_notify_room_ready()
-	engine.mp_set_session_active(true)
-	engine.mp_sync_local_player()
-	
 	MpEvents.on_chat_message_submitted.connect(_broadcast_local_chat_message)
 
 # p4o-a7o: since you are the P2P host, the host
@@ -84,18 +81,26 @@ func start() -> bool:
 	Log.debug("[EasyServer] start()")
 	if _started:
 		return true
-	Steam.createLobby(Steam.LOBBY_TYPE_FRIENDS_ONLY, 10)
+	if EasyClientSteam.client_connected():
+		EasyClientSteam.close_connection()
+	MpEvents.on_server_started.emit()
+	MultiplayerHandler.sender = sender
+	Steam.createLobby(Steam.LOBBY_TYPE_FRIENDS_ONLY, max_players)
 	_started = true
 	return true
 	
 func stop() -> void:
 	if not _started:
 		return
+	_started = false
 	# TODO gracefully close connections?
 	if _listen_handle > 0:
 		Steam.closeListenSocket(_listen_handle)
 	if _lobby_id > 0:
 		Steam.leaveLobby(_lobby_id)
+	if _poll_group > 0:
+		Steam.destroyPollGroup(_poll_group)
+	MultiplayerHandler.reset()
 
 func is_running() -> bool:
 	return _started
@@ -122,7 +127,9 @@ func _broadcast_to_room(room_id: int, msg: String, exclude_pid: int = -1, flags:
 			_send_to(_peers[pid], msg.to_utf8_buffer(), flags)
 
 func _broadcast_local_chat_message(text: String) -> void:
-	chat_overlay.add_chat_message(sender._player_name, text)
+	if not _started:
+		return
+	chat_overlay.add_chat_message(MultiplayerHandler.player_name, text)
 	
 	var msg := _build("chat", ["0", text]).to_utf8_buffer()
 	for other_pid in _peers.keys():
@@ -134,28 +141,28 @@ func _broadcast_local_chat_message(text: String) -> void:
 
 func _host_spawn_other_player(peer: PeerEntry) -> void:
 	Log.debug("[EasyServer] spawning other player %s" % peer.id)
-	mp_handler._spawn_player(peer.id, true)
-	#mp_handler._do_mp_add_player(peer.id)
-	mp_handler._mp_move_player(peer.id, peer.x, peer.y)
+	MultiplayerHandler._spawn_player(peer.id, true)
+	#MultiplayerHandler._do_mp_add_player(peer.id)
+	MultiplayerHandler._mp_move_player(peer.id, peer.x, peer.y)
 	if peer.sprite_name != "":
-		mp_handler._mp_set_player_sprite(peer.id, peer.sprite_name, peer.sprite_idx)
-	mp_handler._mp_set_player_facing(peer.id, peer.facing)
-	mp_handler._mp_set_player_speed(peer.id, peer.speed)
+		MultiplayerHandler._mp_set_player_sprite(peer.id, peer.sprite_name, peer.sprite_idx)
+	MultiplayerHandler._mp_set_player_facing(peer.id, peer.facing)
+	MultiplayerHandler._mp_set_player_speed(peer.id, peer.speed)
 	
 	Log.info("%s, %s" % [peer.id, peer.sys_name])
 	if peer.hidden:
-		mp_handler._mp_set_player_hidden(peer.id, peer.hidden)
+		MultiplayerHandler._mp_set_player_hidden(peer.id, peer.hidden)
 	if peer.transparency > 0:
-		mp_handler._mp_set_player_transparency(peer.id, peer.transparency)
+		MultiplayerHandler._mp_set_player_transparency(peer.id, peer.transparency)
 	if peer.display_name != "":
-		mp_handler._mp_set_player_name(peer.id, peer.display_name)
+		MultiplayerHandler._mp_set_player_name(peer.id, peer.display_name)
 	if peer.sys_name != "":
-		mp_handler._mp_set_player_system_graphic(peer.id, peer.sys_name)
+		MultiplayerHandler._mp_set_player_system_graphic(peer.id, peer.sys_name)
 
 func _host_switching_room(old_room_id: int, new_room_id: int) -> void:
-	# resets the mp_handler to purge all the players from the
+	# resets the MultiplayerHandler to purge all the players from the
 	# previous room and then spawns all the ones in the new room
-	mp_handler.reset()
+	MultiplayerHandler.reset()
 	for pid in _peers.keys():
 		var cur_peer := _peers[pid]
 		if cur_peer.room_id == new_room_id:
@@ -186,10 +193,10 @@ func _handle_sr(pid: int, entry: PeerEntry, args: Array) -> void:
 	if old_room >= 0:
 		_broadcast_to_room(old_room, _build("d", [str(entry.id)]), pid)
 		if new_room != sender._local_room_id:
-			mp_handler._remove_player(pid)
+			MultiplayerHandler._remove_player(pid)
 		else:
 			# queue spawn
-			#mp_handler._spawn_player(pid)
+			#MultiplayerHandler._spawn_player(pid)
 			_host_spawn_other_player(entry)
 
 	entry.room_id = new_room
@@ -331,11 +338,13 @@ func _on_peer_disconnected(peer: PeerEntry) -> void:
 	var pid := peer.id
 	Log.info("[EasyServer] peer %d closed connection (room %d)" % [pid, peer.room_id])
 	_broadcast_to_room(peer.room_id, _build("d", [str(peer.id)]), pid)
-	mp_handler._remove_player(peer.id)
+	MultiplayerHandler._remove_player(peer.id)
 	_peers.erase(pid)
 	_peers_by_handle.erase(peer.steam_conn_handle)
 
 func _receive_messages():
+	if not _started or _poll_group <= 0:
+		return
 	var messages := Steam.receiveMessagesOnPollGroup(_poll_group, 256)
 	if messages.size() == 0:
 		return
@@ -393,7 +402,13 @@ func _receive_messages():
 		if packet_ok and not skip_mp_handling:
 			var handler_args := [ str(pid) ]
 			handler_args.append_array(args)
-			mp_handler._on_packet(type, handler_args)
+			MultiplayerHandler._on_packet(type, handler_args)
+
+func _on_join_request(lobby_id: int, steam_id: int):
+	Log.info("[EasyServer] Host is joining a lobby")
+	if is_running():
+		Log.info("[EasyServer] Stopping this server as host is joining a lobby")
+		stop()
 
 func _on_lobby_created(status: Steam.Result, lobby_id: int):
 	if status != Steam.Result.RESULT_OK:
@@ -403,6 +418,8 @@ func _on_lobby_created(status: Steam.Result, lobby_id: int):
 			.set_notification_body("Failed to create a lobby! Check console for error details") \
 			.start_timer()
 		return
+	if not joinable:
+		Steam.setLobbyJoinable(lobby_id, joinable)
 	Log.info("[EasyServer] Created lobby")
 	notif_manager.create_notification() \
 		.set_notification_body("Lobby successfully created") \
@@ -412,6 +429,8 @@ func _on_lobby_created(status: Steam.Result, lobby_id: int):
 	_lobby_id = lobby_id
 
 func _on_net_connection_status_changed(conn_handle: int, connection: Dictionary, old_state: int):
+	if not _started:
+		return
 	var new_state: int = connection["connection_state"]
 	var identity: int = connection["identity"]
 	Log.info("[EasyServer]: Peer %s connection state changed: %s" % [identity, new_state])

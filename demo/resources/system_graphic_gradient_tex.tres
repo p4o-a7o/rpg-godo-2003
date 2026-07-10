@@ -1,0 +1,10 @@
+[gd_resource type="StyleBoxTexture" format=3 uid="uid://dt48xqjkilgep"]
+
+[ext_resource type="Texture2D" uid="uid://dcw31o6ckjsa3" path="res://resources/orchidmantis_system_celestial.png" id="1_pe0lu"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hmw2x"]
+atlas = ExtResource("1_pe0lu")
+region = Rect2(0, 48, 16, 16)
+
+[resource]
+texture = SubResource("AtlasTexture_hmw2x")

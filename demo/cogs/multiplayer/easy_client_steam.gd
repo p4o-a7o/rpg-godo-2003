@@ -1,4 +1,3 @@
-class_name EasyClientSteam
 extends Node
 
 const PARAM_DELIM := "\uFFFF" # separates fields within one message
@@ -6,21 +5,21 @@ const PARAM_DELIM := "\uFFFF" # separates fields within one message
 var engine: RPGMakerPlayer:
 	set(value):
 		engine = value
-		mp_handler.engine = value
+		MultiplayerHandler.engine = value
+		_wire_player_signals()
 var sender: ClientSender = ClientSender.new()
-var mp_handler: MultiplayerHandler = MultiplayerHandler.new()
 var notif_manager: NotificationMan
 var player_name: String = ""
 
 @export var enable_sounds: bool = true:
 	set(value):
 		enable_sounds = value
-		mp_handler.enable_sounds = value
+		MultiplayerHandler.enable_sounds = value
 @export var enable_chat: bool = false
 @export var mute_audio: bool = false:
 	set(value):
 		mute_audio = value
-		mp_handler.mute_audio = value
+		MultiplayerHandler.mute_audio = value
 @export var moving_queue_limit: int = 4
 
 # Steam stuff
@@ -32,14 +31,8 @@ var _connection_state: int = -1
 var _room_id: int = -1
 var _my_pid: int = -1
 var _room_ready: bool = false
-var _reconnecting: bool = false
 
 func _ready() -> void:
-	sender._client = self
-	mp_handler.sender = sender
-	mp_handler.client = self
-	self.add_child(mp_handler)
-	_wire_player_signals()
 	Steam.lobby_joined.connect(_on_lobby_joined)
 	Steam.join_requested.connect(_on_join_request)
 	Steam.network_connection_status_changed.connect(_on_net_connection_status_changed)
@@ -79,7 +72,7 @@ func send_message(type: String, args: Array = [], flags: int = Steam.NETWORKING_
 func switch_room(map_id: int) -> void:
 	Log.info("[EasyClient] switch_room id=%d" % map_id)
 	_room_ready = false
-	mp_handler.reset()
+	MultiplayerHandler.reset()
 	_room_id = map_id
 	
 	if engine and engine.is_running():
@@ -100,12 +93,46 @@ func set_enable_chat(enabled: bool) -> void:
 func _send_chat_message(text: String) -> void:
 	send_message("chat", [text], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 
+func client_connected() -> int:
+	return _connection_state > 0
+
 func reconnect() -> void:
 	Steam.closeConnection(_connection_handle, Steam.CONNECTION_END_APP_GENERIC, "Reconnecting", false)
-	mp_handler.reset()
+	MultiplayerHandler.reset()
 	_room_ready = false
 	await get_tree().create_timer(0.5).timeout
 	_connection_handle = Steam.connectP2P(_lobby_owner_id, 0, {})
+
+func close_connection() -> void:
+	Log.info("[EasyClient] Closing connection")
+	if _connection_handle > 0:
+		Steam.closeConnection(_connection_handle, Steam.CONNECTION_END_APP_GENERIC, "Disconnecting", false)
+		_connection_handle = -1
+	MultiplayerHandler.reset()
+	_room_ready = false
+
+func join_lobby(lobby_id: int, steam_id: int) -> void:
+	if lobby_id == _lobby_id:
+		Log.info("[EasyClient]: join_requested: Already in lobby %s" % lobby_id)
+		return
+	
+	MultiplayerHandler.sender = sender
+	if EasyServerSteam.is_running():
+		EasyServerSteam.stop()
+	
+	if _lobby_id > 0:
+		Log.info("[EasyClient]: Joining new lobby %s, leaving and disconnecting from old lobby" % lobby_id)
+		Steam.leaveLobby(_lobby_id)
+		Steam.closeConnection(_connection_handle, Steam.CONNECTION_END_APP_GENERIC, "Disconnecting", false)
+		MultiplayerHandler.reset()
+		_room_ready = false
+		MpEvents.on_disconnected.emit()
+	
+	var friend_name := Steam.getFriendPersonaName(steam_id)
+	_lobby_id = lobby_id
+	_lobby_owner_id = steam_id
+	Log.debug("[EasyClient]: Joining %s's lobby" % friend_name)
+	Steam.joinLobby(lobby_id)
 
 func _process(delta: float) -> void:
 	if _lobby_id > 0 and _connection_handle > 0:
@@ -139,7 +166,7 @@ func _receive_messages():
 				_handle_sync_player_data(args)
 				continue
 		
-		mp_handler._on_packet(type, args)
+		MultiplayerHandler._on_packet(type, args)
 
 # Client (non-host) only
 func _handle_room_info(args: Array) -> void:
@@ -174,33 +201,22 @@ func _handle_sync_player_data(_args: Array) -> void:
 	#sender._send_message("chaton", ["1" if enable_chat else "0"])
 
 func _on_join_request(lobby_id: int, steam_id: int):
-	if lobby_id == _lobby_id:
-		Log.info("[EasyClient]: join_requested: Already in lobby %s" % lobby_id)
-		return
-	
-	if _lobby_id > 0:
-		Log.info("[EasyClient]: Joining new lobby %s, leaving and disconnecting from old lobby" % lobby_id)
-		Steam.leaveLobby(_lobby_id)
-		Steam.closeConnection(_connection_handle, Steam.CONNECTION_END_APP_GENERIC, "Disconnecting", false)
-		mp_handler.reset()
-		_room_ready = false
-		MpEvents.on_disconnected.emit()
-	
-	var friend_name := Steam.getFriendPersonaName(steam_id)
-	_lobby_id = lobby_id
-	_lobby_owner_id = steam_id
-	Log.debug("[EasyClient]: Joining %s's lobby" % friend_name)
-	Steam.joinLobby(lobby_id)
+	join_lobby(lobby_id, steam_id)
 
 func _on_lobby_joined(lobby_id: int, permissions: int, locked: bool, response: int):
+	if EasyServerSteam.is_running():
+		return
 	Log.debug("[EasyClient] Joined lobby, initiating P2P sockets connection")
 	_connection_handle = Steam.connectP2P(_lobby_owner_id, 0, {})
 
 func _on_net_connection_status_changed(conn_handle: int, connection: Dictionary, old_state: int):
+	if EasyServerSteam.is_running():
+		return
 	var new_state: int = connection["connection_state"]
 	var identity: int = connection["identity"]
 	_connection_state = new_state
 	Log.debug("[EasyClient] connection state: %s" % new_state)
+	
 	if new_state == Steam.CONNECTION_STATE_CONNECTED:
 		Log.debug("[EasyClient] Server accepted connection, fully connected")
 		var steam_name := Steam.getFriendPersonaName(identity)
@@ -208,10 +224,12 @@ func _on_net_connection_status_changed(conn_handle: int, connection: Dictionary,
 			.set_notification_body("Joined %s's game" % steam_name) \
 			.start_timer()
 		MpEvents.on_connected.emit()
-		mp_handler.mp_ready()
-		send_message("sr", [sender._local_room_id], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+
 		send_message("chaton", ["1" if enable_chat else "0"], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
-		
+		if engine and engine.is_running():
+			MultiplayerHandler.mp_ready()
+			send_message("sr", [sender._local_room_id], Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+
 	if old_state == Steam.CONNECTION_STATE_CONNECTED:
 		if new_state == Steam.CONNECTION_STATE_CLOSED_BY_PEER:
 			Log.debug("[EasyClient] Connection closed by peer")
@@ -221,7 +239,9 @@ func _on_net_connection_status_changed(conn_handle: int, connection: Dictionary,
 				.start_timer()
 			Steam.closeConnection(conn_handle, Steam.CONNECTION_END_APP_GENERIC, "", false)
 			MpEvents.on_disconnected.emit()
-			mp_handler.reset()
+			
+			if engine and engine.is_running():
+				MultiplayerHandler.reset()
 	if old_state == Steam.CONNECTION_STATE_NONE:
 		if new_state == Steam.CONNECTION_STATE_CONNECTING:
 			Log.debug("[EasyClient] Connecting with server")

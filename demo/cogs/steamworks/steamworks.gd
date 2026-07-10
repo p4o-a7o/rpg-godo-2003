@@ -1,5 +1,7 @@
 extends Node
 
+const APP_ID: int = 480
+
 signal steam_connected()
 signal steam_relay_status(ready: bool, status_code: int, debug_message: String)
 
@@ -37,7 +39,7 @@ func force_retry():
 func _try_init_steam():
 	# YN steam app ID is 650700
 	# testing app ID is 480
-	var res := Steam.steamInitEx(480)
+	var res := Steam.steamInitEx(APP_ID)
 	_status_code = res.status
 	_status_verbal = res.verbal
 	if not res.verbal:

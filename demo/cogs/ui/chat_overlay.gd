@@ -8,7 +8,7 @@ extends Control
 # i thought i would add a note here anyways since i do not intend it to be hard-coded
 
 # TODO: menu option for this thing or a debug command
-@export var chat_history_limit: int = 10:
+@export var chat_history_limit: int = 100:
 	set(value):
 		chat_history_limit = value
 		_delete_old_messages()
@@ -17,6 +17,7 @@ extends Control
 
 @onready var chat_text_field: LineEdit = %ChatField
 @onready var chat_vbox: VBoxContainer = %MessageContainer
+@onready var scroll_container: ScrollContainer = %ScrollContainer
 
 const _CHAT_MESSAGE_SCN := preload("res://scenes/chat_message.tscn")
 
@@ -36,6 +37,9 @@ func _ready() -> void:
 func open_chatbox() -> void:
 	chat_text_field.set_visible(true)
 	chat_text_field.grab_focus()
+	scroll_container.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
+	# automatically bottom out scrollbar
+	scroll_container.set_deferred("scroll_vertical", chat_vbox.size.y)
 	_chat_open = true
 	%NotificationsControl.pause_all_notifications()
 	%NotificationsControl.hide()
@@ -43,6 +47,7 @@ func open_chatbox() -> void:
 func close_chatbox() -> void:
 	chat_text_field.set_visible(false)
 	chat_text_field.release_focus()
+	scroll_container.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	_chat_open = false
 	%NotificationsControl.resume_all_notifications()
 	%NotificationsControl.show()

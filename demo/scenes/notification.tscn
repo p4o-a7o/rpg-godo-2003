@@ -6,6 +6,7 @@
 [ext_resource type="Theme" uid="uid://dx13y3513lj8e" path="res://resources/theme.tres" id="2_mfwk2"]
 [ext_resource type="StyleBox" uid="uid://ca3cj8e1se5t3" path="res://resources/borders_texture.tres" id="2_tafmc"]
 [ext_resource type="Texture2D" uid="uid://csbqay7yfwjno" path="res://resources/close16xbevel.png" id="4_yejxv"]
+[ext_resource type="Theme" uid="uid://bx3jpai6atnuv" path="res://resources/sys_gradient.tres" id="6_syajt"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_j6hwb"]
 atlas = ExtResource("1_j6hwb")
@@ -72,15 +73,15 @@ text = "Notification body"
 fit_content = true
 vertical_alignment = 1
 
-[node name="TextGradient" type="TextureRect" parent="PanelContainer/MarginContainer/HSplitContainer/NotificationBody" unique_id=1170511313]
+[node name="TextGradient" type="Panel" parent="PanelContainer/MarginContainer/HSplitContainer/NotificationBody" unique_id=1220125535]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = SubResource("AtlasTexture_j6hwb")
-expand_mode = 1
+mouse_filter = 2
+theme = ExtResource("6_syajt")
 metadata/_edit_use_anchors_ = true
 
 [node name="ReferenceRect" type="ReferenceRect" parent="PanelContainer/MarginContainer/HSplitContainer" unique_id=673017982]
@@ -108,7 +109,7 @@ icon = ExtResource("4_yejxv")
 flat = true
 icon_alignment = 1
 
-[node name="CloseButtonGradient" type="TextureRect" parent="PanelContainer/MarginContainer/HSplitContainer/ReferenceRect/CloseButton" unique_id=1008580337]
+[node name="CloseButtonGradient" type="Panel" parent="PanelContainer/MarginContainer/HSplitContainer/ReferenceRect/CloseButton" unique_id=311980359]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -119,5 +120,5 @@ offset_right = -4.0
 offset_bottom = -4.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = SubResource("AtlasTexture_j6hwb")
-expand_mode = 1
+mouse_filter = 2
+theme = ExtResource("6_syajt")

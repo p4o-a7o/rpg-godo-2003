@@ -10,10 +10,13 @@
 [ext_resource type="Script" uid="uid://dqpdsiija51fi" path="res://cogs/ui/toolbar.gd" id="4_trceg"]
 [ext_resource type="Texture2D" uid="uid://d3yo3d58cieam" path="res://resources/chat-on.png" id="5_a8y0u"]
 [ext_resource type="Texture2D" uid="uid://dvjo6m6mqrn71" path="res://resources/reconnect.png" id="5_jkv2x"]
+[ext_resource type="Theme" uid="uid://bx3jpai6atnuv" path="res://resources/sys_gradient.tres" id="7_gqmmt"]
+[ext_resource type="PackedScene" uid="uid://dsxdyit14g4ni" path="res://scenes/lobby_browser.tscn" id="8_0ld40"]
 [ext_resource type="Script" uid="uid://dejhm7m4q1502" path="res://cogs/ui/chat_overlay.gd" id="8_85g3d"]
 [ext_resource type="Script" uid="uid://c7d4uy5lls8cx" path="res://cogs/game_texture.gd" id="8_tipki"]
 [ext_resource type="FontFile" uid="uid://dh8uf0t6kqv8" path="res://resources/RM2000.ttf" id="10_choun"]
 [ext_resource type="StyleBox" uid="uid://ca3cj8e1se5t3" path="res://resources/borders_texture.tres" id="10_muem4"]
+[ext_resource type="PackedScene" uid="uid://dgjca14i3u38a" path="res://scenes/host_options.tscn" id="10_yc10j"]
 [ext_resource type="StyleBox" uid="uid://bfbanystyirf6" path="res://resources/chat_stylebox.tres" id="11_ya4ey"]
 [ext_resource type="StyleBox" uid="uid://cg3fj7teitw24" path="res://resources/chat_stylebox_focus.tres" id="12_eb6dy"]
 [ext_resource type="Texture2D" uid="uid://br4y6pwuqmyjo" path="res://resources/fullscreenv232x.png" id="12_jbj1t"]
@@ -37,15 +40,11 @@ adjustment_color_correction = SubResource("GradientTexture1D_tefeu")
 atlas = ExtResource("4_tbgi4")
 region = Rect2(0, 32, 16, 16)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_tefeu"]
-atlas = ExtResource("4_tbgi4")
-region = Rect2(0, 48, 16, 16)
-
 [sub_resource type="AtlasTexture" id="AtlasTexture_o6xl0"]
 atlas = ExtResource("4_tefeu")
 region = Rect2(128, 0, 16, 16)
 
-[sub_resource type="ViewportTexture" id="ViewportTexture_tipki"]
+[sub_resource type="ViewportTexture" id="ViewportTexture_gqmmt"]
 viewport_path = NodePath("EngineLayer/TextureRect/GameSubViewport")
 
 [node name="Main" type="Node" unique_id=1774641092]
@@ -90,6 +89,7 @@ size = Vector2i(640, 480)
 render_target_update_mode = 4
 
 [node name="SetupScreen" type="Control" parent="GodotMenuLayer/SubViewportContainer/SubViewport" unique_id=1982970179 node_paths=PackedStringArray("engine")]
+unique_name_in_owner = true
 texture_filter = 1
 layout_mode = 3
 anchors_preset = 15
@@ -102,7 +102,7 @@ script = ExtResource("3_tefeu")
 engine = NodePath("../../../../RPGMakerPlayer")
 metadata/_edit_use_anchors_ = true
 
-[node name="TextureRect" type="TextureRect" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen" unique_id=1639508812]
+[node name="BG" type="TextureRect" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen" unique_id=1639508812]
 z_index = -2
 layout_mode = 1
 anchors_preset = 15
@@ -113,7 +113,8 @@ grow_vertical = 2
 texture = SubResource("AtlasTexture_jyhfs")
 metadata/_edit_use_anchors_ = true
 
-[node name="VBoxContainer" type="VBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen" unique_id=977551207]
+[node name="SetupControls" type="VBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen" unique_id=977551207]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -128,12 +129,12 @@ grow_horizontal = 2
 grow_vertical = 2
 metadata/_edit_use_anchors_ = true
 
-[node name="GamePath" type="Button" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer" unique_id=1943746834]
+[node name="GamePath" type="Button" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls" unique_id=1943746834]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 mouse_filter = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/GamePath" unique_id=1333864712]
+[node name="MarginContainer" type="MarginContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/GamePath" unique_id=1333864712]
 z_index = -1
 layout_mode = 1
 anchors_preset = 15
@@ -142,26 +143,26 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="PanelContainer" type="PanelContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/GamePath/MarginContainer" unique_id=1271025791]
+[node name="PanelContainer" type="PanelContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/GamePath/MarginContainer" unique_id=1271025791]
 layout_mode = 2
 metadata/_edit_use_anchors_ = true
 
-[node name="VBoxContainer" type="VBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/GamePath/MarginContainer/PanelContainer" unique_id=1722507272]
+[node name="VBoxContainer" type="VBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/GamePath/MarginContainer/PanelContainer" unique_id=1722507272]
 layout_mode = 2
 alignment = 1
 
-[node name="HBoxContainer" type="HBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/GamePath/MarginContainer/PanelContainer/VBoxContainer" unique_id=553416486]
+[node name="HBoxContainer" type="HBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/GamePath/MarginContainer/PanelContainer/VBoxContainer" unique_id=553416486]
 layout_mode = 2
 
-[node name="Spacer" type="Control" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/GamePath/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer" unique_id=682192264]
+[node name="Spacer" type="Control" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/GamePath/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer" unique_id=682192264]
 custom_minimum_size = Vector2(15, 0)
 layout_mode = 2
 
-[node name="VBoxContainer2" type="VBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/GamePath/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer" unique_id=1712045101]
+[node name="VBoxContainer2" type="VBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/GamePath/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer" unique_id=1712045101]
 layout_mode = 2
 alignment = 1
 
-[node name="RichTextLabel" type="RichTextLabel" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/GamePath/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer/VBoxContainer2" unique_id=490659906]
+[node name="RichTextLabel" type="RichTextLabel" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/GamePath/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer/VBoxContainer2" unique_id=490659906]
 clip_children = 1
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
@@ -170,35 +171,33 @@ text = "Game path:"
 fit_content = true
 vertical_alignment = 1
 
-[node name="TextureRect" type="TextureRect" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/GamePath/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer/VBoxContainer2/RichTextLabel" unique_id=1636360012]
+[node name="TextureRect" type="Panel" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/GamePath/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer/VBoxContainer2/RichTextLabel" unique_id=567460185]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = SubResource("AtlasTexture_tefeu")
-expand_mode = 1
-stretch_mode = 1
+theme = ExtResource("7_gqmmt")
 metadata/_edit_use_anchors_ = true
 
-[node name="VBoxContainer" type="VBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/GamePath/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer" unique_id=615035627]
+[node name="VBoxContainer" type="VBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/GamePath/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer" unique_id=615035627]
 layout_mode = 2
 alignment = 1
 
-[node name="GamePath" type="LineEdit" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/GamePath/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer/VBoxContainer" unique_id=1513494830]
+[node name="GamePath" type="LineEdit" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/GamePath/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer/VBoxContainer" unique_id=1513494830]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(140, 0)
 layout_mode = 2
 placeholder_text = "/dev/null"
 caret_blink = true
 
-[node name="GamePathButton" type="Button" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/GamePath/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer" unique_id=977179384]
+[node name="GamePathButton" type="Button" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/GamePath/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer" unique_id=977179384]
 unique_name_in_owner = true
 layout_mode = 2
 icon = SubResource("AtlasTexture_o6xl0")
 
-[node name="GamePathFileDialog" type="FileDialog" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/GamePath/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer/GamePathButton" unique_id=1378254326]
+[node name="GamePathFileDialog" type="FileDialog" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/GamePath/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer/GamePathButton" unique_id=1378254326]
 unique_name_in_owner = true
 oversampling_override = 1.0
 title = "Open a Directory"
@@ -206,12 +205,12 @@ file_mode = 2
 access = 2
 use_native_dialog = true
 
-[node name="AudioVolume" type="Button" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer" unique_id=1947328750]
+[node name="AudioVolume" type="Button" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls" unique_id=1947328750]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 mouse_filter = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/AudioVolume" unique_id=1563482332]
+[node name="MarginContainer" type="MarginContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/AudioVolume" unique_id=1563482332]
 z_index = -1
 layout_mode = 1
 anchors_preset = 15
@@ -220,15 +219,15 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="PanelContainer" type="PanelContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/AudioVolume/MarginContainer" unique_id=784342492]
+[node name="PanelContainer" type="PanelContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/AudioVolume/MarginContainer" unique_id=784342492]
 layout_mode = 2
 metadata/_edit_use_anchors_ = true
 
-[node name="VBoxContainer" type="VBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/AudioVolume/MarginContainer/PanelContainer" unique_id=1782783659]
+[node name="VBoxContainer" type="VBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/AudioVolume/MarginContainer/PanelContainer" unique_id=1782783659]
 layout_mode = 2
 alignment = 1
 
-[node name="RichTextLabel" type="RichTextLabel" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/AudioVolume/MarginContainer/PanelContainer/VBoxContainer" unique_id=1900612781]
+[node name="RichTextLabel" type="RichTextLabel" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/AudioVolume/MarginContainer/PanelContainer/VBoxContainer" unique_id=1900612781]
 clip_children = 1
 layout_mode = 2
 bbcode_enabled = true
@@ -237,40 +236,38 @@ fit_content = true
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="TextureRect" type="TextureRect" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/AudioVolume/MarginContainer/PanelContainer/VBoxContainer/RichTextLabel" unique_id=1052187905]
+[node name="TextureRect" type="Panel" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/AudioVolume/MarginContainer/PanelContainer/VBoxContainer/RichTextLabel" unique_id=1409170909]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = SubResource("AtlasTexture_tefeu")
-expand_mode = 1
-stretch_mode = 1
+theme = ExtResource("7_gqmmt")
 metadata/_edit_use_anchors_ = true
 
-[node name="HBoxContainer" type="HBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/AudioVolume/MarginContainer/PanelContainer/VBoxContainer" unique_id=816480569]
+[node name="HBoxContainer" type="HBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/AudioVolume/MarginContainer/PanelContainer/VBoxContainer" unique_id=816480569]
 layout_mode = 2
 
-[node name="Control2" type="Control" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/AudioVolume/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer" unique_id=1529769459]
+[node name="Control2" type="Control" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/AudioVolume/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer" unique_id=1529769459]
 custom_minimum_size = Vector2(40, 0)
 layout_mode = 2
 
-[node name="AudioSlider" type="HSlider" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/AudioVolume/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer" unique_id=276613756]
+[node name="AudioSlider" type="HSlider" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/AudioVolume/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer" unique_id=276613756]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(186, 0)
 layout_mode = 2
 
-[node name="Control" type="Control" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/AudioVolume/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer" unique_id=165061355]
+[node name="Control" type="Control" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/AudioVolume/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer" unique_id=165061355]
 custom_minimum_size = Vector2(40, 0)
 layout_mode = 2
 
-[node name="GameOptions" type="Button" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer" unique_id=1252056792]
+[node name="GameOptions" type="Button" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls" unique_id=1252056792]
 custom_minimum_size = Vector2(48, 96.295)
 layout_mode = 2
 mouse_filter = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/GameOptions" unique_id=2043966806]
+[node name="MarginContainer" type="MarginContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/GameOptions" unique_id=2043966806]
 z_index = -1
 layout_mode = 1
 anchors_preset = 15
@@ -279,15 +276,15 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="PanelContainer" type="PanelContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/GameOptions/MarginContainer" unique_id=249397716]
+[node name="PanelContainer" type="PanelContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/GameOptions/MarginContainer" unique_id=249397716]
 layout_mode = 2
 metadata/_edit_use_anchors_ = true
 
-[node name="VBoxContainer" type="VBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/GameOptions/MarginContainer/PanelContainer" unique_id=925002290]
+[node name="VBoxContainer" type="VBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/GameOptions/MarginContainer/PanelContainer" unique_id=925002290]
 layout_mode = 2
 alignment = 1
 
-[node name="RichTextLabel" type="RichTextLabel" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/GameOptions/MarginContainer/PanelContainer/VBoxContainer" unique_id=1959814526]
+[node name="RichTextLabel" type="RichTextLabel" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/GameOptions/MarginContainer/PanelContainer/VBoxContainer" unique_id=1959814526]
 clip_children = 1
 layout_mode = 2
 bbcode_enabled = true
@@ -296,27 +293,25 @@ fit_content = true
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="TextureRect" type="TextureRect" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/GameOptions/MarginContainer/PanelContainer/VBoxContainer/RichTextLabel" unique_id=2123298504]
+[node name="TextureRect" type="Panel" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/GameOptions/MarginContainer/PanelContainer/VBoxContainer/RichTextLabel" unique_id=971255670]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = SubResource("AtlasTexture_tefeu")
-expand_mode = 1
-stretch_mode = 1
+theme = ExtResource("7_gqmmt")
 metadata/_edit_use_anchors_ = true
 
-[node name="MarginContainer" type="MarginContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/GameOptions/MarginContainer/PanelContainer/VBoxContainer" unique_id=2085684771]
+[node name="MarginContainer" type="MarginContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/GameOptions/MarginContainer/PanelContainer/VBoxContainer" unique_id=2085684771]
 layout_mode = 2
 theme_override_constants/margin_left = 50
 theme_override_constants/margin_right = 50
 
-[node name="VBoxContainer" type="VBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/GameOptions/MarginContainer/PanelContainer/VBoxContainer/MarginContainer" unique_id=518943081]
+[node name="VBoxContainer" type="VBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/GameOptions/MarginContainer/PanelContainer/VBoxContainer/MarginContainer" unique_id=518943081]
 layout_mode = 2
 
-[node name="RichTextLabel2" type="RichTextLabel" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/GameOptions/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/VBoxContainer" unique_id=1365186472]
+[node name="RichTextLabel2" type="RichTextLabel" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/GameOptions/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/VBoxContainer" unique_id=1365186472]
 clip_children = 1
 layout_mode = 2
 bbcode_enabled = true
@@ -325,19 +320,17 @@ fit_content = true
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="TextureRect" type="TextureRect" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/GameOptions/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/RichTextLabel2" unique_id=251145084]
+[node name="TextureRect" type="Panel" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/GameOptions/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/RichTextLabel2" unique_id=1665697912]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = SubResource("AtlasTexture_tefeu")
-expand_mode = 1
-stretch_mode = 1
+theme = ExtResource("7_gqmmt")
 metadata/_edit_use_anchors_ = true
 
-[node name="WindowScale" type="OptionButton" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/GameOptions/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/VBoxContainer" unique_id=1935431017]
+[node name="WindowScale" type="OptionButton" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/GameOptions/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/VBoxContainer" unique_id=1935431017]
 unique_name_in_owner = true
 layout_mode = 2
 selected = 0
@@ -351,12 +344,12 @@ popup/item_2/id = 2
 popup/item_3/text = "4x"
 popup/item_3/id = 3
 
-[node name="Multiplayer" type="Button" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer" unique_id=325583667]
-custom_minimum_size = Vector2(48, 150)
+[node name="Multiplayer" type="Button" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls" unique_id=325583667]
+custom_minimum_size = Vector2(48, 78)
 layout_mode = 2
 mouse_filter = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/Multiplayer" unique_id=940274742]
+[node name="MarginContainer" type="MarginContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/Multiplayer" unique_id=940274742]
 z_index = -1
 layout_mode = 1
 anchors_preset = 15
@@ -366,60 +359,22 @@ grow_horizontal = 2
 grow_vertical = 2
 metadata/_edit_use_anchors_ = true
 
-[node name="PanelContainer" type="PanelContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/Multiplayer/MarginContainer" unique_id=186491292]
+[node name="PanelContainer" type="PanelContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/Multiplayer/MarginContainer" unique_id=186491292]
 layout_mode = 2
 metadata/_edit_use_anchors_ = true
 
-[node name="VBoxContainer" type="VBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/Multiplayer/MarginContainer" unique_id=1914004533]
+[node name="VBoxContainer" type="VBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/Multiplayer/MarginContainer" unique_id=1914004533]
 layout_mode = 2
 alignment = 1
 
-[node name="HBoxContainer3" type="HBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/Multiplayer/MarginContainer/VBoxContainer" unique_id=2049179882]
-layout_mode = 2
-alignment = 1
-
-[node name="VBoxContainer" type="VBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer3" unique_id=72911502]
-layout_mode = 2
-alignment = 1
-
-[node name="RichTextLabel" type="RichTextLabel" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer3/VBoxContainer" unique_id=923353004]
-clip_children = 1
-custom_minimum_size = Vector2(90, 0)
-layout_mode = 2
-bbcode_enabled = true
-text = "Multiplayer:"
-fit_content = true
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="TextureRect" type="TextureRect" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer3/VBoxContainer/RichTextLabel" unique_id=182415426]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = SubResource("AtlasTexture_tefeu")
-expand_mode = 1
-stretch_mode = 1
-metadata/_edit_use_anchors_ = true
-
-[node name="Spacer" type="Control" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer3" unique_id=2082739252]
-custom_minimum_size = Vector2(8, 0)
+[node name="HBoxContainer2" type="HBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/Multiplayer/MarginContainer/VBoxContainer" unique_id=590387434]
 layout_mode = 2
 
-[node name="MpEnable" type="CheckBox" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer3" unique_id=1940980210]
-unique_name_in_owner = true
-layout_mode = 2
-
-[node name="HBoxContainer2" type="HBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/Multiplayer/MarginContainer/VBoxContainer" unique_id=590387434]
-layout_mode = 2
-
-[node name="Spacer" type="Control" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer2" unique_id=1876263409]
+[node name="Spacer" type="Control" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer2" unique_id=1876263409]
 custom_minimum_size = Vector2(15, 0)
 layout_mode = 2
 
-[node name="RichTextLabel" type="RichTextLabel" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer2" unique_id=606968686]
+[node name="RichTextLabel" type="RichTextLabel" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer2" unique_id=606968686]
 clip_children = 1
 custom_minimum_size = Vector2(70, 0)
 layout_mode = 2
@@ -428,19 +383,17 @@ text = "Nickname:"
 fit_content = true
 vertical_alignment = 1
 
-[node name="TextureRect" type="TextureRect" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer2/RichTextLabel" unique_id=1233680694]
+[node name="TextureRect" type="Panel" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer2/RichTextLabel" unique_id=160359375]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = SubResource("AtlasTexture_tefeu")
-expand_mode = 1
-stretch_mode = 1
+theme = ExtResource("7_gqmmt")
 metadata/_edit_use_anchors_ = true
 
-[node name="MpName" type="LineEdit" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer2" unique_id=647784948]
+[node name="MpName" type="LineEdit" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer2" unique_id=647784948]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(160, 0)
 layout_mode = 2
@@ -448,54 +401,18 @@ text = "Minnatsuki"
 placeholder_text = "Minnatsuki"
 caret_blink = true
 
-[node name="HBoxContainer" type="HBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/Multiplayer/MarginContainer/VBoxContainer" unique_id=1263856904]
+[node name="HBoxContainer5" type="HBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/Multiplayer/MarginContainer/VBoxContainer" unique_id=1291916112]
 layout_mode = 2
 
-[node name="Spacer" type="Control" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer" unique_id=522823102]
+[node name="Spacer" type="Control" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer5" unique_id=1116409518]
 custom_minimum_size = Vector2(15, 0)
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer" unique_id=341879914]
+[node name="VBoxContainer" type="VBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer5" unique_id=204326574]
 layout_mode = 2
 alignment = 1
 
-[node name="RichTextLabel" type="RichTextLabel" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer" unique_id=1808411963]
-clip_children = 1
-custom_minimum_size = Vector2(150, 0)
-layout_mode = 2
-bbcode_enabled = true
-text = "Host lobby:"
-fit_content = true
-vertical_alignment = 1
-
-[node name="TextureRect" type="TextureRect" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer/VBoxContainer/RichTextLabel" unique_id=568647589]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = SubResource("AtlasTexture_tefeu")
-expand_mode = 1
-stretch_mode = 1
-metadata/_edit_use_anchors_ = true
-
-[node name="MpHostLobby" type="CheckBox" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer" unique_id=573693616]
-unique_name_in_owner = true
-layout_mode = 2
-
-[node name="HBoxContainer5" type="HBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/Multiplayer/MarginContainer/VBoxContainer" unique_id=1291916112]
-layout_mode = 2
-
-[node name="Spacer" type="Control" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer5" unique_id=1116409518]
-custom_minimum_size = Vector2(15, 0)
-layout_mode = 2
-
-[node name="VBoxContainer" type="VBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer5" unique_id=204326574]
-layout_mode = 2
-alignment = 1
-
-[node name="RichTextLabel" type="RichTextLabel" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer5/VBoxContainer" unique_id=392413786]
+[node name="RichTextLabel" type="RichTextLabel" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer5/VBoxContainer" unique_id=392413786]
 clip_children = 1
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
@@ -504,88 +421,30 @@ text = "Enable chat:"
 fit_content = true
 vertical_alignment = 1
 
-[node name="TextureRect" type="TextureRect" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer5/VBoxContainer/RichTextLabel" unique_id=497225890]
+[node name="TextureRect" type="Panel" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer5/VBoxContainer/RichTextLabel" unique_id=1996821595]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = SubResource("AtlasTexture_tefeu")
-expand_mode = 1
-stretch_mode = 1
+theme = ExtResource("7_gqmmt")
 metadata/_edit_use_anchors_ = true
 
-[node name="EnableChat" type="CheckBox" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer5" unique_id=1086459223]
+[node name="EnableChat" type="CheckBox" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer5" unique_id=1086459223]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer" unique_id=639083235]
+[node name="HBoxContainer" type="HBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls" unique_id=639083235]
 layout_mode = 2
 alignment = 2
 
-[node name="RunOnStart" type="Button" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/HBoxContainer" unique_id=1168768736]
-visible = false
-custom_minimum_size = Vector2(128.02, 40)
-layout_mode = 2
-mouse_filter = 2
-
-[node name="MarginContainer" type="MarginContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/HBoxContainer/RunOnStart" unique_id=1283896498]
-z_index = -1
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="PanelContainer" type="PanelContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/HBoxContainer/RunOnStart/MarginContainer" unique_id=1174572774]
-layout_mode = 2
-metadata/_edit_use_anchors_ = true
-
-[node name="VBoxContainer" type="VBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/HBoxContainer/RunOnStart/MarginContainer/PanelContainer" unique_id=1331552852]
-layout_mode = 2
-alignment = 1
-
-[node name="HBoxContainer" type="HBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/HBoxContainer/RunOnStart/MarginContainer/PanelContainer/VBoxContainer" unique_id=535025336]
-layout_mode = 2
-
-[node name="VBoxContainer" type="VBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/HBoxContainer/RunOnStart/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer" unique_id=333694171]
-layout_mode = 2
-alignment = 1
-
-[node name="RichTextLabel" type="RichTextLabel" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/HBoxContainer/RunOnStart/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer/VBoxContainer" unique_id=226766833]
-clip_children = 1
-custom_minimum_size = Vector2(80, 0)
-layout_mode = 2
-bbcode_enabled = true
-text = "Run on Start"
-fit_content = true
-horizontal_alignment = 2
-vertical_alignment = 1
-
-[node name="TextureRect" type="TextureRect" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/HBoxContainer/RunOnStart/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer/VBoxContainer/RichTextLabel" unique_id=1896756509]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = SubResource("AtlasTexture_tefeu")
-expand_mode = 1
-stretch_mode = 1
-metadata/_edit_use_anchors_ = true
-
-[node name="RunOnStart" type="CheckBox" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/HBoxContainer/RunOnStart/MarginContainer/PanelContainer/VBoxContainer/HBoxContainer" unique_id=232033457]
-unique_name_in_owner = true
-layout_mode = 2
-
-[node name="SaveAndRun" type="Button" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/HBoxContainer" unique_id=1664356463]
+[node name="SaveAndHost" type="Button" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/HBoxContainer" unique_id=1664356463]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(96, 28)
 layout_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/HBoxContainer/SaveAndRun" unique_id=1099562076]
+[node name="MarginContainer" type="MarginContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/HBoxContainer/SaveAndHost" unique_id=1099562076]
 z_index = -1
 layout_mode = 1
 anchors_preset = 15
@@ -595,27 +454,27 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="PanelContainer" type="PanelContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/HBoxContainer/SaveAndRun/MarginContainer" unique_id=191998594]
+[node name="PanelContainer" type="PanelContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/HBoxContainer/SaveAndHost/MarginContainer" unique_id=191998594]
 layout_mode = 2
 mouse_filter = 2
 metadata/_edit_use_anchors_ = true
 
-[node name="VBoxContainer" type="VBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/HBoxContainer/SaveAndRun/MarginContainer/PanelContainer" unique_id=17713885]
+[node name="VBoxContainer" type="VBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/HBoxContainer/SaveAndHost/MarginContainer/PanelContainer" unique_id=17713885]
 layout_mode = 2
 mouse_filter = 2
 alignment = 1
 
-[node name="RichTextLabel" type="RichTextLabel" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/HBoxContainer/SaveAndRun/MarginContainer/PanelContainer/VBoxContainer" unique_id=1115886119]
+[node name="RichTextLabel" type="RichTextLabel" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/HBoxContainer/SaveAndHost/MarginContainer/PanelContainer/VBoxContainer" unique_id=1115886119]
 clip_children = 1
 layout_mode = 2
 mouse_filter = 2
 bbcode_enabled = true
-text = "Save and run"
+text = "Save and host"
 fit_content = true
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="TextureRect" type="TextureRect" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/HBoxContainer/SaveAndRun/MarginContainer/PanelContainer/VBoxContainer/RichTextLabel" unique_id=130553268]
+[node name="TextureRect" type="Panel" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/HBoxContainer/SaveAndHost/MarginContainer/PanelContainer/VBoxContainer/RichTextLabel" unique_id=1955649369]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -623,22 +482,76 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-texture = SubResource("AtlasTexture_tefeu")
-expand_mode = 1
-stretch_mode = 1
+theme = ExtResource("7_gqmmt")
 metadata/_edit_use_anchors_ = true
+
+[node name="SaveAndJoin" type="Button" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/HBoxContainer" unique_id=225482412]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 28)
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/HBoxContainer/SaveAndJoin" unique_id=1553635463]
+z_index = -1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/HBoxContainer/SaveAndJoin/MarginContainer" unique_id=665127223]
+layout_mode = 2
+mouse_filter = 2
+metadata/_edit_use_anchors_ = true
+
+[node name="VBoxContainer" type="VBoxContainer" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/HBoxContainer/SaveAndJoin/MarginContainer/PanelContainer" unique_id=1353260885]
+layout_mode = 2
+mouse_filter = 2
+alignment = 1
+
+[node name="RichTextLabel" type="RichTextLabel" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/HBoxContainer/SaveAndJoin/MarginContainer/PanelContainer/VBoxContainer" unique_id=115635087]
+clip_children = 1
+layout_mode = 2
+mouse_filter = 2
+bbcode_enabled = true
+text = "Save and join"
+fit_content = true
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TextureRect" type="Panel" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/HBoxContainer/SaveAndJoin/MarginContainer/PanelContainer/VBoxContainer/RichTextLabel" unique_id=1633932690]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("7_gqmmt")
+metadata/_edit_use_anchors_ = true
+
+[node name="LobbyBrowser" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen" unique_id=2088739135 instance=ExtResource("8_0ld40")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+
+[node name="HostOptions" parent="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen" unique_id=1364613324 instance=ExtResource("10_yc10j")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
 
 [node name="EngineLayer" type="CanvasLayer" parent="." unique_id=1085336250]
 unique_name_in_owner = true
 visible = false
 
-[node name="TextureRect" type="TextureRect" parent="EngineLayer" unique_id=443753672]
+[node name="TextureRect" type="TextureRect" parent="EngineLayer" unique_id=315263333]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = SubResource("ViewportTexture_tipki")
+texture = SubResource("ViewportTexture_gqmmt")
 metadata/_edit_use_anchors_ = true
 
 [node name="GameSubViewport" type="SubViewport" parent="EngineLayer/TextureRect" unique_id=1663316751]
@@ -808,21 +721,32 @@ mouse_behavior_recursive = 2
 script = ExtResource("8_85g3d")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="ChatOverlayLayer/ChatControl" unique_id=824267174]
+custom_minimum_size = Vector2(0, 270)
 layout_mode = 1
-anchors_preset = 15
+anchors_preset = 12
+anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = -21.0
 grow_horizontal = 2
-grow_vertical = 2
+grow_vertical = 0
 mouse_filter = 2
 mouse_behavior_recursive = 2
 theme_override_constants/separation = 0
 alignment = 2
 
-[node name="MessageContainer" type="VBoxContainer" parent="ChatOverlayLayer/ChatControl/VBoxContainer" unique_id=1663354205]
+[node name="ScrollContainer" type="ScrollContainer" parent="ChatOverlayLayer/ChatControl/VBoxContainer" unique_id=1275433641]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 0
+
+[node name="MessageContainer" type="VBoxContainer" parent="ChatOverlayLayer/ChatControl/VBoxContainer/ScrollContainer" unique_id=1663354205]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(320, 0)
 layout_mode = 2
+size_flags_vertical = 3
 mouse_filter = 2
 theme_override_constants/separation = 0
 alignment = 2
@@ -842,8 +766,7 @@ backspace_deletes_composite_character_enabled = true
 caret_blink = true
 
 [connection signal="resolution_changed" from="RPGMakerPlayer" to="RPGMakerPlayer" method="_on_resolution_changed"]
-[connection signal="item_selected" from="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/GameOptions/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/WindowScale" to="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen" method="_on_window_scale_changed"]
-[connection signal="toggled" from="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/VBoxContainer/Multiplayer/MarginContainer/VBoxContainer/HBoxContainer3/MpEnable" to="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen" method="_on_mp_enable_toggled"]
+[connection signal="item_selected" from="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/GameOptions/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/WindowScale" to="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen" method="_on_window_scale_changed"]
 [connection signal="mouse_entered" from="ToolbarLayer/ToolbarRoot" to="ToolbarLayer/ToolbarRoot" method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="ToolbarLayer/ToolbarRoot" to="ToolbarLayer/ToolbarRoot" method="_on_mouse_exited"]
 [connection signal="pressed" from="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems/ReconnectButton" to="ToolbarLayer/ToolbarRoot" method="_on_reconnect_button_pressed"]
