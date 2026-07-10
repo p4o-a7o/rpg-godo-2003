@@ -9,7 +9,6 @@ var engine: RPGMakerPlayer:
 		_wire_player_signals()
 var sender: ClientSender = ClientSender.new()
 var notif_manager: NotificationMan
-var player_name: String = ""
 
 @export var enable_sounds: bool = true:
 	set(value):
