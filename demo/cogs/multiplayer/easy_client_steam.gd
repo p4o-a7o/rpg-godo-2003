@@ -98,12 +98,15 @@ func client_connected() -> int:
 func reconnect() -> void:
 	Steam.closeConnection(_connection_handle, Steam.CONNECTION_END_APP_GENERIC, "Reconnecting", false)
 	MultiplayerHandler.reset()
+	# TODO remove when better solution is made
+	MultiplayerHandler._player_names.clear()
 	_room_ready = false
 	await get_tree().create_timer(0.5).timeout
 	_connection_handle = Steam.connectP2P(_lobby_owner_id, 0, {})
 
 func close_connection() -> void:
 	Log.info("[EasyClient] Closing connection")
+	MultiplayerHandler._player_names.clear()
 	if _connection_handle > 0:
 		Steam.closeConnection(_connection_handle, Steam.CONNECTION_END_APP_GENERIC, "Disconnecting", false)
 		_connection_handle = -1
@@ -121,6 +124,7 @@ func join_lobby(lobby_id: int, steam_id: int) -> void:
 	
 	if _lobby_id > 0:
 		Log.info("[EasyClient]: Joining new lobby %s, leaving and disconnecting from old lobby" % lobby_id)
+		MultiplayerHandler._player_names.clear()
 		Steam.leaveLobby(_lobby_id)
 		Steam.closeConnection(_connection_handle, Steam.CONNECTION_END_APP_GENERIC, "Disconnecting", false)
 		MultiplayerHandler.reset()
@@ -232,6 +236,7 @@ func _on_net_connection_status_changed(conn_handle: int, connection: Dictionary,
 	if old_state == Steam.CONNECTION_STATE_CONNECTED:
 		if new_state == Steam.CONNECTION_STATE_CLOSED_BY_PEER:
 			Log.debug("[EasyClient] Connection closed by peer")
+			MultiplayerHandler._player_names.clear()
 			var steam_name := Steam.getFriendPersonaName(identity)
 			notif_manager.create_notification() \
 				.set_notification_body("You were disconnected from %s's game" % steam_name) \

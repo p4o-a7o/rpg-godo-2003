@@ -26,6 +26,18 @@ class PeerEntry:
 	var display_name: String = ""
 	var chat_enabled: bool = false # p4o-a7o: off by default
 	
+	# For tracking client's awareness of someones name
+	# without being in the same room as the other peer
+	# (for global chat)
+	# (whether the peer knows of a PID's name or not)
+	var names_known: Dictionary[int, bool] = {}
+	
+	func is_peer_name_networked(pid: int) -> bool:
+		return names_known.has(pid)
+	func set_peer_name_networked(pid: int) -> void:
+		Log.debug("setting pid name for %d acknowledged" % pid)
+		names_known.set(pid, true)
+	
 var engine: RPGMakerPlayer:
 	set(value):
 		engine = value
@@ -136,8 +148,20 @@ func _broadcast_local_chat_message(text: String) -> void:
 		var cur_peer := _peers[other_pid] as PeerEntry
 		if not cur_peer.chat_enabled:
 			continue
-		if cur_peer.room_id == sender._local_room_id:
-			_send_to(cur_peer, msg, Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+		# TODO: bring back map chat and global chat as an option
+		#if cur_peer.room_id == sender._local_room_id:
+		if not cur_peer.is_peer_name_networked(0):
+			_send_to(cur_peer, _build("name", ["0", MultiplayerHandler.player_name]).to_utf8_buffer(), Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+			cur_peer.set_peer_name_networked(0)
+		_send_to(cur_peer, msg, Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+
+func _set_name_acked(pid: int, room_id: int) -> void:
+	# TODO un-hack this
+	for other_pid in _peers.keys():
+		if pid == other_pid:
+			continue
+		if room_id == _peers[other_pid].room_id:
+			_peers[other_pid].set_peer_name_networked(pid)
 
 func _host_spawn_other_player(peer: PeerEntry) -> void:
 	Log.debug("[EasyServer] spawning other player %s" % peer.id)
@@ -182,6 +206,7 @@ func _send_peer_state_to(target: PeerEntry, other: PeerEntry) -> void:
 		_send_to(target, _build("tr", [str(other.id), str(other.transparency)]).to_utf8_buffer(), Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 	if other.display_name != "":
 		_send_to(target, _build("name", [str(other.id), other.display_name]).to_utf8_buffer(), Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+		target.set_peer_name_networked(other.pid)
 	if other.sys_name != "":
 		_send_to(target, _build("sys", [str(other.id), other.sys_name]).to_utf8_buffer(), Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 
@@ -221,6 +246,7 @@ func _handle_sr(pid: int, entry: PeerEntry, args: Array) -> void:
 		_broadcast_to_room(new_room, _build("tr", [str(entry.id), str(entry.transparency)]), pid, Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 	if entry.display_name != "":
 		_broadcast_to_room(new_room, _build("name", [str(entry.id), entry.display_name]), pid, Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+		_set_name_acked(entry.id, entry.room_id)
 	if entry.sys_name != "":
 		_broadcast_to_room(new_room, _build("sys", [str(entry.id), entry.sys_name]), pid, Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 	
@@ -287,6 +313,7 @@ func _handle_name_pkt(pid: int, entry: PeerEntry, args: Array) -> void:
 		return
 	entry.display_name = args[0]
 	_broadcast_to_room(entry.room_id, _build("name", [str(entry.id)] + args), pid)
+	_set_name_acked(pid, entry.room_id)
 
 func _handle_chat(pid: int, entry: PeerEntry, args: Array) -> void:
 	if args.is_empty():
@@ -308,11 +335,14 @@ func _handle_chat(pid: int, entry: PeerEntry, args: Array) -> void:
 		var cur_peer := _peers[other_pid] as PeerEntry
 		if not cur_peer.chat_enabled:
 			continue
-		if cur_peer.room_id == entry.room_id:
-			_send_to(cur_peer, _build("chat", [str(pid), msg]).to_utf8_buffer(), Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+		#if cur_peer.room_id == entry.room_id:
+		if cur_peer.id != pid and not cur_peer.is_peer_name_networked(pid):
+			_send_to(cur_peer, _build("name", [str(pid), entry.display_name]).to_utf8_buffer(), Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
+			cur_peer.set_peer_name_networked(pid)
+		_send_to(cur_peer, _build("chat", [str(pid), msg]).to_utf8_buffer(), Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 	
-	if sender._local_room_id != entry.room_id:
-		return
+	#if sender._local_room_id != entry.room_id:
+	#	return
 	MpEvents.on_chat_message_received.emit(entry.display_name, msg)
 
 func _handle_chaton(pid: int, entry: PeerEntry, args: Array) -> void:

@@ -61,6 +61,12 @@ var _last_flash_frame_index: int = -1
 var _last_frame_flash: Array = []
 var _repeating_flashes: Dictionary = {}
 
+# p4o-a7o: For global chat. and yes
+# this is somewhat temporary, i should
+# probably make this better but this
+# will suffice for now
+var _player_names: Dictionary[int, String] = {}
+
 func mp_ready() -> void:
 	engine.mp_notify_room_ready()
 	engine.mp_set_session_active(true)
@@ -349,23 +355,31 @@ func _handle_name(args: Array) -> void:
 		return
 	var id := int(args[0])
 	var n := args[1] as String
-	_mp_set_player_name(id, n)
+	_player_names[id] = n
+	if _players.has(id):
+		_mp_set_player_name(id, n)
 
 func _handle_chat(args: Array) -> void:
 	if args.size() < 2:
 		return
 	var id := int(args[0])
 	var msg := args[1] as String
-	if msg.length() > 100:
-		Log.warn("[MultiplayerHandler] Attempt to send message over 100 characters from PID %d" % id)
+	if msg.length() > 300:
+		Log.warn("[MultiplayerHandler] Attempt to send message over 300 characters from PID %d" % id)
 		return
 	var display_name := player_name
-	if not _players.has(id):
+	if not _player_names.has(id):
+		if id != EasyClientSteam._my_pid: # FIXME
+			Log.warn("[MultiplayerHandler] got chat message from unknown PID: %d" % id)
+			return 
+	else:
+		display_name = _player_names[id]
+	"""if not _players.has(id):
 		if id != EasyClientSteam._my_pid: # FIXME
 			Log.warn("[MultiplayerHandler] got chat message from unknown PID: %d" % id)
 			return
 	else:
-		display_name = _players[id].display_name
+		display_name = _player_names[id]"""
 	MpEvents.on_chat_message_received.emit(display_name, msg)
 	
 	

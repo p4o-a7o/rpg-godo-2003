@@ -19,3 +19,12 @@ func _switching_room(old_room_id: int, new_room_id: int):
 		if cur_peer.room_id == old_room_id:
 			Steam.sendMessageToConnection(cur_peer.steam_conn_handle, disconnect_msg, Steam.NETWORKING_SEND_RELIABLE_NO_NAGLE)
 	send_basic_data()
+
+# TODO delete when there is a proper solution for this
+func send_basic_data() -> void:
+	super.send_basic_data()
+	var peers := EasyServerSteam._peers
+	for pid in peers:
+		var cur_peer := peers[pid]
+		if cur_peer.room_id == _local_room_id:
+			cur_peer.set_peer_name_networked(0)

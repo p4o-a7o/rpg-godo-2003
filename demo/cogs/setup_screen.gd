@@ -185,6 +185,8 @@ func _launch_game(host: bool = false) -> void:
 		return
 	
 	MultiplayerHandler.player_name = mp_name.text
+	# TODO remove when better solution is made
+	MultiplayerHandler._player_names.clear()
 	
 	engine.set_game_path(path)
 	_on_audio_volume_changed(audio_slider.value)
