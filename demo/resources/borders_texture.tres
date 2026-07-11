@@ -1,6 +1,6 @@
 [gd_resource type="StyleBoxTexture" format=3 uid="uid://ca3cj8e1se5t3"]
 
-[ext_resource type="Texture2D" uid="uid://dcw31o6ckjsa3" path="res://resources/orchidmantis_system_celestial.png" id="1_uk5bd"]
+[ext_resource type="Texture2D" uid="uid://dcw31o6ckjsa3" path="res://resources/img/orchidmantis_system_celestial.png" id="1_uk5bd"]
 
 [resource]
 content_margin_left = 8.0

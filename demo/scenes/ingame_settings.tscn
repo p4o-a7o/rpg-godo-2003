@@ -1,25 +1,26 @@
-[gd_scene format=3 uid="uid://dgjca14i3u38a"]
+[gd_scene format=3 uid="uid://bghy72vtcj2ot"]
 
-[ext_resource type="Theme" uid="uid://dx13y3513lj8e" path="res://resources/theme.tres" id="1_3btpn"]
-[ext_resource type="Texture2D" uid="uid://dcw31o6ckjsa3" path="res://resources/img/orchidmantis_system_celestial.png" id="1_cdfe3"]
-[ext_resource type="Script" uid="uid://de7nx8ltynvby" path="res://cogs/ui/host_options.gd" id="2_3urtl"]
-[ext_resource type="Theme" uid="uid://bx3jpai6atnuv" path="res://resources/sys_gradient.tres" id="3_3urtl"]
+[ext_resource type="Theme" uid="uid://dx13y3513lj8e" path="res://resources/theme.tres" id="1_ggmd1"]
+[ext_resource type="Script" uid="uid://cqlvkr7ef06rk" path="res://cogs/ui/ingame_settings_screen.gd" id="2_ggmd1"]
+[ext_resource type="Texture2D" uid="uid://dcw31o6ckjsa3" path="res://resources/img/orchidmantis_system_celestial.png" id="3_ccyf0"]
+[ext_resource type="Theme" uid="uid://bx3jpai6atnuv" path="res://resources/sys_gradient.tres" id="4_1hyy8"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_n87br"]
-atlas = ExtResource("1_cdfe3")
+atlas = ExtResource("3_ccyf0")
 region = Rect2(0, 32, 16, 16)
 
-[node name="HostOptions" type="Control" unique_id=1364613324]
+[node name="InGameSettings" type="Control" unique_id=1364613324]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("1_3btpn")
-script = ExtResource("2_3urtl")
+theme = ExtResource("1_ggmd1")
+script = ExtResource("2_ggmd1")
 
 [node name="BG" type="TextureRect" parent="." unique_id=1530824825]
+modulate = Color(1, 1, 1, 0.49803922)
 z_index = -2
 layout_mode = 1
 anchors_preset = 15
@@ -49,7 +50,7 @@ clip_children = 1
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 2
 bbcode_enabled = true
-text = "Host Options"
+text = "Settings"
 fit_content = true
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -61,7 +62,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("3_3urtl")
+theme = ExtResource("4_1hyy8")
 metadata/_edit_use_anchors_ = true
 
 [node name="OptionsPanel" type="Button" parent="VBoxContainer" unique_id=1467927933]
@@ -96,62 +97,11 @@ size_flags_vertical = 3
 layout_mode = 2
 alignment = 1
 
-[node name="Control" type="Control" parent="VBoxContainer/OptionsPanel/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/MarginContainer/VBoxContainer" unique_id=1601426451]
+[node name="DisableJoiningGroup" type="Control" parent="VBoxContainer/OptionsPanel/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/MarginContainer/VBoxContainer" unique_id=435211941]
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 
-[node name="RichTextLabel" type="RichTextLabel" parent="VBoxContainer/OptionsPanel/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/MarginContainer/VBoxContainer/Control" unique_id=1412822030]
-clip_children = 1
-custom_minimum_size = Vector2(60, 0)
-layout_mode = 1
-anchors_preset = 14
-anchor_top = 0.5
-anchor_right = 1.0
-anchor_bottom = 0.5
-offset_top = -6.5
-offset_bottom = 6.5
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_horizontal = 0
-bbcode_enabled = true
-text = "Max Players"
-fit_content = true
-autowrap_mode = 0
-vertical_alignment = 1
-
-[node name="TextureRect" type="Panel" parent="VBoxContainer/OptionsPanel/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/MarginContainer/VBoxContainer/Control/RichTextLabel" unique_id=1336320233]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme = ExtResource("3_3urtl")
-metadata/_edit_use_anchors_ = true
-
-[node name="LbMaxPlayers" type="SpinBox" parent="VBoxContainer/OptionsPanel/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/MarginContainer/VBoxContainer/Control" unique_id=1343150423]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(110, 0)
-layout_mode = 1
-anchors_preset = 6
-anchor_left = 1.0
-anchor_top = 0.5
-anchor_right = 1.0
-anchor_bottom = 0.5
-offset_left = -50.0
-offset_top = -10.5
-offset_bottom = 10.5
-grow_horizontal = 0
-grow_vertical = 2
-size_flags_horizontal = 8
-value = 10.0
-suffix = "players"
-
-[node name="Control2" type="Control" parent="VBoxContainer/OptionsPanel/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/MarginContainer/VBoxContainer" unique_id=435211941]
-custom_minimum_size = Vector2(0, 30)
-layout_mode = 2
-
-[node name="RichTextLabel" type="RichTextLabel" parent="VBoxContainer/OptionsPanel/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/MarginContainer/VBoxContainer/Control2" unique_id=499905211]
+[node name="RichTextLabel" type="RichTextLabel" parent="VBoxContainer/OptionsPanel/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/MarginContainer/VBoxContainer/DisableJoiningGroup" unique_id=499905211]
 clip_children = 1
 custom_minimum_size = Vector2(60, 0)
 layout_mode = 1
@@ -170,17 +120,17 @@ fit_content = true
 autowrap_mode = 0
 vertical_alignment = 1
 
-[node name="TextureRect" type="Panel" parent="VBoxContainer/OptionsPanel/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/MarginContainer/VBoxContainer/Control2/RichTextLabel" unique_id=125805541]
+[node name="TextureRect" type="Panel" parent="VBoxContainer/OptionsPanel/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/MarginContainer/VBoxContainer/DisableJoiningGroup/RichTextLabel" unique_id=125805541]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("3_3urtl")
+theme = ExtResource("4_1hyy8")
 metadata/_edit_use_anchors_ = true
 
-[node name="LbDisableJoining" type="CheckBox" parent="VBoxContainer/OptionsPanel/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/MarginContainer/VBoxContainer/Control2" unique_id=408550627]
+[node name="LbDisableJoining" type="CheckBox" parent="VBoxContainer/OptionsPanel/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/MarginContainer/VBoxContainer/DisableJoiningGroup" unique_id=408550627]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 6
@@ -194,17 +144,12 @@ offset_bottom = 16.0
 grow_horizontal = 0
 grow_vertical = 2
 tooltip_text = "Disables joining through Steam friends list.
-Players will only be able to join through an invite."
+Players will only be able to join through an invite.
+Changing this setting takes effect immediately."
 
 [node name="ButtonList" type="HBoxContainer" parent="VBoxContainer" unique_id=937532246]
 layout_mode = 2
 alignment = 2
-
-[node name="HostButton" type="Button" parent="VBoxContainer/ButtonList" unique_id=565964404]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(80, 0)
-layout_mode = 2
-text = "Host"
 
 [node name="BackButton" type="Button" parent="VBoxContainer/ButtonList" unique_id=1861393129]
 unique_name_in_owner = true
@@ -212,4 +157,5 @@ custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
 text = "Back"
 
-[connection signal="pressed" from="VBoxContainer/ButtonList/HostButton" to="." method="_host_pressed"]
+[connection signal="toggled" from="VBoxContainer/OptionsPanel/MarginContainer/PanelContainer/MarginContainer/VBoxContainer/MarginContainer/VBoxContainer/DisableJoiningGroup/LbDisableJoining" to="." method="_on_join_toggled"]
+[connection signal="pressed" from="VBoxContainer/ButtonList/BackButton" to="." method="_on_back_button_pressed"]

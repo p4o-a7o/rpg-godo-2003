@@ -172,7 +172,6 @@ func _do_pending_spawns() -> void:
 		var id: int = _pending_spawn[i-r]
 		if _players.has(id):
 			if _do_mp_add_player(id):
-				print("Okay bro")
 				_pending_spawn.pop_at(i-r)
 				r += 1
 
@@ -386,10 +385,12 @@ func _handle_chat(args: Array) -> void:
 ####################################################################################################
 
 func _mp_move_player(id: int, x: int, y: int) -> void:
-	_players[id].x = x
-	_players[id].y = y
 	if _is_pending(id):
 		return
+	if not _players.has(id):
+		return
+	_players[id].x = x
+	_players[id].y = y
 	if engine and engine.is_running():
 		engine.mp_move_player(id, x, y)
 

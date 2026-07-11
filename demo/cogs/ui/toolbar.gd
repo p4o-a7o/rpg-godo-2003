@@ -3,15 +3,17 @@ extends Control
 @onready var container := %PanelContainer
 @onready var dimmer := %ToolbarDimmer
 
-var tex_reconnect_off := preload("res://resources/reconnect-off.png")
-var tex_reconnect_on := preload("res://resources/reconnect.png")
-var tex_chat_off := preload("res://resources/chat-off.png")
-var tex_chat_on := preload("res://resources/chat-on.png")
+var tex_reconnect_off := preload("res://resources/img/reconnect-off.png")
+var tex_reconnect_on := preload("res://resources/img/reconnect.png")
+var tex_chat_off := preload("res://resources/img/chat-off.png")
+var tex_chat_on := preload("res://resources/img/chat-on.png")
+
+var _toolbar_in_use: bool = false
 
 func _ready() -> void:
 	container.set_position(Vector2(0, -container.size.y))
-	%ReconnectButton.icon = tex_reconnect_off
-	%ChatToggle.icon = tex_chat_off
+	%ReconnectButton.texture_normal = tex_reconnect_off
+	%ChatToggle.texture_normal = tex_chat_off
 	%ChatToggle.button_pressed = false
 	
 	dimmer.set_position(Vector2(0, -container.size.y))
@@ -74,24 +76,25 @@ func _fullscreen(on: bool):
 
 func _on_mouse_entered() -> void:
 	reveal_toolbar()
+	_toolbar_in_use = true
 
 func _on_mouse_exited() -> void:
 	hide_toolbar()
+	_toolbar_in_use = false
 
 func _multiplayer_connected():
 	%ReconnectButton.disabled = false
-	%ReconnectButton.icon = tex_reconnect_on
+	%ReconnectButton.texture_normal = tex_reconnect_on
 	%ReconnectButton.modulate = Color(0.5, 1.0, 0.5)
 	
 func _multiplayer_disconnected():
-	%ReconnectButton.icon = tex_reconnect_off
+	%ReconnectButton.texture_normal = tex_reconnect_off
 	%ReconnectButton.modulate = Color(1.0, 0.33, 0.33)
 
 func _disable_reconnect_button():
 	%ReconnectButton.disabled = true
 
 func _on_chat_toggle_toggled(toggled_on: bool) -> void:
-	%ChatToggle.icon = tex_chat_on if toggled_on else tex_chat_off
 	var engine := get_node_or_null("%RPGMakerPlayer") as RPGMakerPlayer
 	if not engine or not engine.is_running():
 		Log.warn("Toolbar: Chat button pressed but no game is running!")
@@ -115,9 +118,26 @@ func _on_reconnect_button_pressed() -> void:
 		return
 
 	Log.debug("Toolbar: Reconnect requested")
-	%ReconnectButton.icon = tex_reconnect_off
+	%ReconnectButton.texture_normal = tex_reconnect_off
 	%ReconnectButton.modulate = Color(1.0, 0.7, 0.33)
 	EasyClientSteam.reconnect()
+
+func _on_screenshot_button_pressed() -> void:
+	Log.info("[Toolbar] making screenshot")
+	var tex: ImageTexture = %RPGMakerPlayer.get_frame_texture()
+	var now: int = round(Time.get_unix_time_from_system())
+	# why don't we just make it overwrite... why not...
+	var filename: String = "user://screenshot_%d.png" % now
+	var img_upscaled := tex.get_image().duplicate()
+	img_upscaled.resize(320*3, 240*3, Image.INTERPOLATE_NEAREST)
+	img_upscaled.save_png(filename)
+	var path_abs: String = OS.get_user_data_dir() + ("/screenshot_%d.png" % now)
+	# thumbnail is generated automatically it says
+	Steam.addScreenshotToLibrary(path_abs, "", 320, 240)
+
+func _on_settings_button_pressed() -> void:
+	var settings_menu: InGameSettingsScreen = %InGameSettings
+	settings_menu.open()
 
 func _on_fullscreen_toggled(toggled_on: bool) -> void:
 	_fullscreen(toggled_on)

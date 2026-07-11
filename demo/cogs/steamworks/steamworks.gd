@@ -1,8 +1,9 @@
 extends Node
 
-const APP_ID: int = 480
+const APP_ID: int = 650700
 
 signal steam_connected()
+signal steam_connect_failed()
 signal steam_relay_status(ready: bool, status_code: int, debug_message: String)
 
 var _initialized = false
@@ -46,15 +47,15 @@ func _try_init_steam():
 		_status_verbal = "No status" 
 	print("steamInitEx:", res)
 	if res.status != 0:
-		if res.status == 2:
-			print("Trying again in 5 seconds")
-			_retry_timer = get_tree().create_timer(5)
-			await _retry_timer.timeout
-			_try_init_steam()
-		else:
-			return
+		Log.warn("[Steamworks] Couldn't init steam: " + _status_verbal)
+		print("Trying again in 5 seconds")
+		steam_connect_failed.emit()
+		_retry_timer = get_tree().create_timer(5)
+		await _retry_timer.timeout
+		_try_init_steam()
 	if res.status == 0:
 		print("steam init OK")
+		_initialized = true
 		steam_connected.emit()
 		Steam.initRelayNetworkAccess()
 

@@ -91,6 +91,9 @@ func _wire_player_signals() -> void:
 
 func start() -> bool:
 	Log.debug("[EasyServer] start()")
+	if not Steamworks.is_initialized():
+		Log.warn("[EasyServer] Attempt to start server without Steam being initialized!")
+		return false
 	if _started:
 		return true
 	if EasyClientSteam.client_connected():
@@ -116,6 +119,11 @@ func stop() -> void:
 
 func is_running() -> bool:
 	return _started
+
+func set_lobby_joinable(joinable: bool) -> void:
+	if not is_running() or _lobby_id <= 0:
+		return
+	Steam.setLobbyJoinable(_lobby_id, joinable)
 
 func _process(_delta: float):
 	if _lobby_id > 0 and _listen_handle > 0:
@@ -326,7 +334,10 @@ func _handle_chat(pid: int, entry: PeerEntry, args: Array) -> void:
 		Log.warn("[EasyServer] Attempt to send chat message with no name provided")
 		return
 	var msg := args[0] as String
-	if msg.length() > 100:
+	if msg.length() > 300:
+		return
+	msg = msg.strip_edges()
+	if msg.is_empty():
 		return
 	# basically _broadcast_to_room, but skips over
 	# peers that have chat disabled, and also

@@ -2,7 +2,7 @@
 
 [ext_resource type="Theme" uid="uid://dx13y3513lj8e" path="res://resources/theme.tres" id="1_iaktf"]
 [ext_resource type="Script" uid="uid://dv26yhpfi83h5" path="res://cogs/ui/lobby_browser.gd" id="1_mmtjp"]
-[ext_resource type="Texture2D" uid="uid://dcw31o6ckjsa3" path="res://resources/orchidmantis_system_celestial.png" id="1_yd7we"]
+[ext_resource type="Texture2D" uid="uid://dcw31o6ckjsa3" path="res://resources/img/orchidmantis_system_celestial.png" id="1_yd7we"]
 [ext_resource type="Theme" uid="uid://bx3jpai6atnuv" path="res://resources/sys_gradient.tres" id="4_mmtjp"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_jyhfs"]

@@ -38,8 +38,7 @@ func open_chatbox() -> void:
 	chat_text_field.set_visible(true)
 	chat_text_field.grab_focus()
 	scroll_container.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
-	# automatically bottom out scrollbar
-	scroll_container.set_deferred("scroll_vertical", chat_vbox.size.y)
+	_scroll_to_bottom()
 	_chat_open = true
 	%NotificationsControl.pause_all_notifications()
 	%NotificationsControl.hide()
@@ -83,9 +82,11 @@ func _process(delta: float) -> void:
 		contents.modulate.a = transp
 
 func _on_text_submitted(text_field) -> void:
-	MpEvents.on_chat_message_submitted.emit(chat_text_field.text)
+	var text := chat_text_field.text.strip_edges()
+	if not text.is_empty():
+		MpEvents.on_chat_message_submitted.emit(text)
 	chat_text_field.clear()
-	close_chatbox()
+	#close_chatbox()
 
 func _delete_old_messages() -> void:
 	while chat_vbox.get_child_count() > chat_history_limit:
@@ -98,11 +99,19 @@ func add_chat_message(display_name: String, text: String) -> void:
 	var msg_contents := "[%s]: %s" % [display_name, text]
 	var chat_msg := _CHAT_MESSAGE_SCN.instantiate()
 	chat_msg.text = msg_contents
-	#chat_msg.get_node("Contents").text = msg_contents
 	# it would probably be better if it was reverse order
+
+	var was_bottomed_out := (scroll_container.scroll_vertical + scroll_container.size.y) >= chat_vbox.size.y
 	chat_vbox.add_child(chat_msg)
 	_delete_old_messages()
 	_fade_tweens.append(FadeTween.new())
+	# automatically bottom out scrollbar
+	if was_bottomed_out:
+		# What the fuck? Yeah.
+		self.call_deferred("_scroll_to_bottom")
+
+func _scroll_to_bottom():
+	scroll_container.set_deferred("scroll_vertical", 999999)
 
 func clear_chat():
 	for item in chat_vbox.get_children():

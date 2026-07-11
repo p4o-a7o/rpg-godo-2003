@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ceft3vrp2ra6x"
-path="res://.godot/imported/chat-off.png-83b103518d4b2de8b5df9a16cc77b6cb.ctex"
+uid="uid://yuqwdji42onx"
+path="res://.godot/imported/reconnect-off.png-eb9a832d17b431445c29ecafd5f48099.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://resources/chat-off.png"
-dest_files=["res://.godot/imported/chat-off.png-83b103518d4b2de8b5df9a16cc77b6cb.ctex"]
+source_file="res://resources/img/reconnect-off.png"
+dest_files=["res://.godot/imported/reconnect-off.png-eb9a832d17b431445c29ecafd5f48099.ctex"]
 
 [params]
 

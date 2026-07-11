@@ -1,7 +1,7 @@
 [gd_resource type="Theme" format=3 uid="uid://dx13y3513lj8e"]
 
 [ext_resource type="FontFile" uid="uid://dh8uf0t6kqv8" path="res://resources/RM2000.ttf" id="1_cjfk0"]
-[ext_resource type="Texture2D" uid="uid://dcw31o6ckjsa3" path="res://resources/orchidmantis_system_celestial.png" id="1_e1x85"]
+[ext_resource type="Texture2D" uid="uid://dcw31o6ckjsa3" path="res://resources/img/orchidmantis_system_celestial.png" id="1_e1x85"]
 [ext_resource type="StyleBox" uid="uid://ca3cj8e1se5t3" path="res://resources/borders_texture.tres" id="2_886mr"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_886mr"]

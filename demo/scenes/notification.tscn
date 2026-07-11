@@ -1,26 +1,24 @@
 [gd_scene format=3 uid="uid://csgohy3tqx15j"]
 
 [ext_resource type="Script" uid="uid://d1724xt0wk2iy" path="res://cogs/ui/notification.gd" id="1_8ldpm"]
-[ext_resource type="Texture2D" uid="uid://dcw31o6ckjsa3" path="res://resources/orchidmantis_system_celestial.png" id="1_j6hwb"]
+[ext_resource type="Texture2D" uid="uid://dcw31o6ckjsa3" path="res://resources/img/orchidmantis_system_celestial.png" id="1_j6hwb"]
 [ext_resource type="Theme" uid="uid://th0sddt12pwm" path="res://resources/theme_outlined_panel.tres" id="1_mfwk2"]
 [ext_resource type="Theme" uid="uid://dx13y3513lj8e" path="res://resources/theme.tres" id="2_mfwk2"]
-[ext_resource type="StyleBox" uid="uid://ca3cj8e1se5t3" path="res://resources/borders_texture.tres" id="2_tafmc"]
-[ext_resource type="Texture2D" uid="uid://csbqay7yfwjno" path="res://resources/close16xbevel.png" id="4_yejxv"]
+[ext_resource type="Texture2D" uid="uid://csbqay7yfwjno" path="res://resources/img/close16xbevel.png" id="4_yejxv"]
 [ext_resource type="Theme" uid="uid://bx3jpai6atnuv" path="res://resources/sys_gradient.tres" id="6_syajt"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_j6hwb"]
 atlas = ExtResource("1_j6hwb")
 region = Rect2(0, 48, 16, 16)
 
-[node name="Notification" type="Button" unique_id=1194582300 node_paths=PackedStringArray("_close_button", "_notification_body_label", "_progress_bar")]
+[node name="Notification" type="PanelContainer" unique_id=1952509392 node_paths=PackedStringArray("_close_button", "_notification_body_label", "_progress_bar")]
 custom_minimum_size = Vector2(267, 42)
 offset_right = 267.0
 offset_bottom = 42.0
 size_flags_horizontal = 0
+size_flags_vertical = 0
 mouse_filter = 1
 theme = ExtResource("1_mfwk2")
-theme_override_styles/hover = ExtResource("2_tafmc")
-theme_override_styles/focus = ExtResource("2_tafmc")
 script = ExtResource("1_8ldpm")
 _close_button = NodePath("PanelContainer/MarginContainer/HSplitContainer/ReferenceRect/CloseButton")
 _notification_body_label = NodePath("PanelContainer/MarginContainer/HSplitContainer/NotificationBody")
@@ -29,21 +27,13 @@ _progress_bar = NodePath("ProgressBarGradient")
 [node name="ProgressBarGradient" type="TextureRect" parent="." unique_id=1063708910]
 modulate = Color(1, 1, 1, 0.2)
 z_index = -1
-layout_mode = 0
-offset_left = 1.0
-offset_top = 1.0
-offset_right = 266.0
-offset_bottom = 41.0
+layout_mode = 2
 texture = SubResource("AtlasTexture_j6hwb")
 expand_mode = 1
 
 [node name="PanelContainer" type="PanelContainer" parent="." unique_id=1487653491]
 z_index = -2
-layout_mode = 0
-offset_left = 1.0
-offset_top = 1.0
-offset_right = 266.0
-offset_bottom = 41.0
+layout_mode = 2
 mouse_filter = 1
 theme = ExtResource("2_mfwk2")
 

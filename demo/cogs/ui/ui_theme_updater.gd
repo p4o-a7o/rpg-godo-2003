@@ -9,6 +9,10 @@ const sys_gradient := preload("res://resources/sys_gradient.tres")
 
 # This is needed so I can read the color palette of the PNG file
 # so I can reliably determine which color is the transparent color
+#
+# addendum: heres hoping this isnt subject to endianness or 
+# native platform integer width or some nonsense i guess lol
+# maybe i should take a look at godot and see if its fixed width or not
 const PNG_HEADER_BYTES: int = 727905341920923785
 
 func is_palette_chunk(chunk_type_bytes: PackedByteArray) -> bool:
@@ -43,6 +47,7 @@ func is_header_chunk(chunk_type_bytes: PackedByteArray) -> bool:
 		chunk_type_bytes[2] == 0x44 and \
 		chunk_type_bytes[3] == 0x52
 
+# TODO this is slow as hell i think
 func _read_system_graphic(file_path: String) -> ImageTexture:
 	var sys_blob: PackedByteArray = FileAccess.get_file_as_bytes(file_path)
 	var open_err := FileAccess.get_open_error()
@@ -123,6 +128,7 @@ func _read_system_graphic(file_path: String) -> ImageTexture:
 	# finally we can create the texture and be on our merry way
 	return ImageTexture.create_from_image(img)
 
+# TODO .bmp, .xyz
 func update_menu_theme(system_name: String) -> void:
 	var file_path: String = game_path + "/System/" + system_name + ".png"
 	Log.info("[UIThemeUpdater] System graphic path: %s" % file_path)

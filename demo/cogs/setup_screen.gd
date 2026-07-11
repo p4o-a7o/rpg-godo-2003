@@ -25,6 +25,7 @@ extends Control
 const _SETTINGS_PATH := "user://main_settings.cfg"
 
 var _watch_timer: Timer = null
+var _steam_fails: int = 0
 
 func _ready() -> void:
 	var args := OS.get_cmdline_args()
@@ -60,6 +61,13 @@ func _ready() -> void:
 		var notif: Notification = %NotificationsControl.create_notification()
 		notif.set_notification_body("Connected to Steam")
 		notif.start_timer()
+	)
+	Steamworks.steam_connect_failed.connect(func():
+		_steam_fails += 1
+		if _steam_fails % 3 == 0:
+			var notif: Notification = %NotificationsControl.create_notification()
+			notif.set_notification_body("It looks like we can't connect to Steam! Open console with the \"`\" key for error details!")
+			notif.set_notification_expires(false)
 	)
 	Steamworks._try_init_steam()
 	UIThemeUpdater.game_path = game_path.text
@@ -193,11 +201,14 @@ func _launch_game(host: bool = false) -> void:
 	engine.start_game()
 	
 	%ToolbarLayer.visible = true
+	# Toolbar hint
+	%ToolbarRoot.reveal_toolbar()
+	get_tree().create_timer(2).timeout.connect(func():
+		if %ToolbarRoot._toolbar_in_use:
+			return
+		%ToolbarRoot.hide_toolbar()
+	)
 	%ChatToggle.button_pressed = enable_chat.button_pressed
-	if %ChatToggle.button_pressed:
-		%ChatToggle.icon = preload("res://resources/chat-on.png")
-	else:
-		%ChatToggle.icon = preload("res://resources/chat-off.png")
 	
 	godot_menu_layer.visible = false
 	engine_layer.visible     = true

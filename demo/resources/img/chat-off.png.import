@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://csbqay7yfwjno"
-path="res://.godot/imported/close16xbevel.png-5dd528ecd5e2bee9336a2b5a535cc2b5.ctex"
+uid="uid://ceft3vrp2ra6x"
+path="res://.godot/imported/chat-off.png-a070575044e19e0007e83ec38dd30685.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://resources/close16xbevel.png"
-dest_files=["res://.godot/imported/close16xbevel.png-5dd528ecd5e2bee9336a2b5a535cc2b5.ctex"]
+source_file="res://resources/img/chat-off.png"
+dest_files=["res://.godot/imported/chat-off.png-a070575044e19e0007e83ec38dd30685.ctex"]
 
 [params]
 

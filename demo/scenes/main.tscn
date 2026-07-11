@@ -5,11 +5,10 @@
 [ext_resource type="Theme" uid="uid://dx13y3513lj8e" path="res://resources/theme.tres" id="2_sugp2"]
 [ext_resource type="Script" uid="uid://c561u7lacb6tj" path="res://cogs/player.gd" id="2_tipki"]
 [ext_resource type="Script" uid="uid://dypfde5jv3n8j" path="res://cogs/setup_screen.gd" id="3_tefeu"]
-[ext_resource type="Texture2D" uid="uid://dcw31o6ckjsa3" path="res://resources/orchidmantis_system_celestial.png" id="4_tbgi4"]
+[ext_resource type="Texture2D" uid="uid://dcw31o6ckjsa3" path="res://resources/img/orchidmantis_system_celestial.png" id="4_tbgi4"]
 [ext_resource type="Texture2D" uid="uid://8nq581ljnhf1" path="res://resources/16x16.png" id="4_tefeu"]
 [ext_resource type="Script" uid="uid://dqpdsiija51fi" path="res://cogs/ui/toolbar.gd" id="4_trceg"]
-[ext_resource type="Texture2D" uid="uid://d3yo3d58cieam" path="res://resources/chat-on.png" id="5_a8y0u"]
-[ext_resource type="Texture2D" uid="uid://dvjo6m6mqrn71" path="res://resources/reconnect.png" id="5_jkv2x"]
+[ext_resource type="Texture2D" uid="uid://dvjo6m6mqrn71" path="res://resources/img/reconnect.png" id="5_jkv2x"]
 [ext_resource type="Theme" uid="uid://bx3jpai6atnuv" path="res://resources/sys_gradient.tres" id="7_gqmmt"]
 [ext_resource type="PackedScene" uid="uid://dsxdyit14g4ni" path="res://scenes/lobby_browser.tscn" id="8_0ld40"]
 [ext_resource type="Script" uid="uid://dejhm7m4q1502" path="res://cogs/ui/chat_overlay.gd" id="8_85g3d"]
@@ -19,8 +18,14 @@
 [ext_resource type="PackedScene" uid="uid://dgjca14i3u38a" path="res://scenes/host_options.tscn" id="10_yc10j"]
 [ext_resource type="StyleBox" uid="uid://bfbanystyirf6" path="res://resources/chat_stylebox.tres" id="11_ya4ey"]
 [ext_resource type="StyleBox" uid="uid://cg3fj7teitw24" path="res://resources/chat_stylebox_focus.tres" id="12_eb6dy"]
-[ext_resource type="Texture2D" uid="uid://br4y6pwuqmyjo" path="res://resources/fullscreenv232x.png" id="12_jbj1t"]
+[ext_resource type="Texture2D" uid="uid://br4y6pwuqmyjo" path="res://resources/img/fullscreenv232x.png" id="12_jbj1t"]
+[ext_resource type="Texture2D" uid="uid://yuqwdji42onx" path="res://resources/img/reconnect-off.png" id="15_y6deb"]
+[ext_resource type="Texture2D" uid="uid://d3mvswe8yiv6d" path="res://resources/img/cog32x.png" id="16_jscy8"]
+[ext_resource type="Texture2D" uid="uid://ceft3vrp2ra6x" path="res://resources/img/chat-off.png" id="17_og1vs"]
 [ext_resource type="Script" uid="uid://2im5s87aypu" path="res://cogs/ui/notificationman.gd" id="18_dp3eg"]
+[ext_resource type="Texture2D" uid="uid://d0gdao1sxiwak" path="res://resources/img/chat-on-flat.png" id="21_og1vs"]
+[ext_resource type="Texture2D" uid="uid://jyc5ypy06a1m" path="res://resources/img/screenshot32x.png" id="22_2wyq8"]
+[ext_resource type="PackedScene" uid="uid://bghy72vtcj2ot" path="res://scenes/ingame_settings.tscn" id="24_og1vs"]
 
 [sub_resource type="Gradient" id="Gradient_tbgi4"]
 offsets = PackedFloat32Array(0, 0.627907, 0.9302326, 1)
@@ -581,129 +586,6 @@ stretch_mode = 5
 script = ExtResource("8_tipki")
 engine = NodePath("../../../../RPGMakerPlayer")
 
-[node name="ToolbarLayer" type="CanvasLayer" parent="." unique_id=303368926]
-unique_name_in_owner = true
-visible = false
-
-[node name="ToolbarRoot" type="Control" parent="ToolbarLayer" unique_id=668610770]
-unique_name_in_owner = true
-layout_mode = 3
-anchors_preset = 10
-anchor_right = 1.0
-offset_bottom = 66.0
-grow_horizontal = 2
-mouse_filter = 1
-script = ExtResource("4_trceg")
-
-[node name="ToolbarDimmer" type="Panel" parent="ToolbarLayer/ToolbarRoot" unique_id=237439607]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 1.0
-offset_top = 1.0
-offset_right = -1.0
-offset_bottom = -11.0
-grow_horizontal = 2
-grow_vertical = 2
-offset_transform_position = Vector2(1, 1)
-offset_transform_visual_only = false
-mouse_filter = 2
-theme = ExtResource("2_sugp2")
-
-[node name="PanelContainer" type="PanelContainer" parent="ToolbarLayer/ToolbarRoot" unique_id=335515382]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_bottom = 56.0
-grow_horizontal = 2
-mouse_filter = 1
-theme_override_styles/panel = ExtResource("10_muem4")
-
-[node name="ToolbarMargin" type="MarginContainer" parent="ToolbarLayer/ToolbarRoot/PanelContainer" unique_id=2147472911]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_constants/margin_left = 4
-theme_override_constants/margin_top = 4
-theme_override_constants/margin_right = 4
-theme_override_constants/margin_bottom = 4
-
-[node name="ToolbarItems" type="HSplitContainer" parent="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin" unique_id=1150375865]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_constants/separation = 1
-split_offsets = PackedInt32Array(0, 1500)
-dragging_enabled = false
-dragger_visibility = 1
-
-[node name="ReconnectButton" type="Button" parent="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems" unique_id=839221480]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(32, 32)
-custom_maximum_size = Vector2(32, 32)
-layout_mode = 2
-mouse_filter = 1
-icon = ExtResource("5_jkv2x")
-flat = true
-icon_alignment = 1
-
-[node name="ChatToggle" type="Button" parent="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems" unique_id=13752837]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(32, 32)
-custom_maximum_size = Vector2(32, 32)
-layout_mode = 2
-mouse_filter = 1
-toggle_mode = true
-icon = ExtResource("5_a8y0u")
-flat = true
-icon_alignment = 1
-
-[node name="FullscreenButton" type="Button" parent="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems" unique_id=1034920001]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(32, 32)
-custom_maximum_size = Vector2(32, 32)
-layout_mode = 2
-mouse_filter = 1
-toggle_mode = true
-icon = ExtResource("12_jbj1t")
-flat = true
-icon_alignment = 1
-
-[node name="NotificationLayer" type="CanvasLayer" parent="." unique_id=1391604931]
-unique_name_in_owner = true
-
-[node name="NotificationsControl" type="Control" parent="NotificationLayer" unique_id=41663212]
-unique_name_in_owner = true
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-script = ExtResource("18_dp3eg")
-
-[node name="MarginContainer" type="MarginContainer" parent="NotificationLayer/NotificationsControl" unique_id=17299097]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-theme_override_constants/margin_left = 4
-theme_override_constants/margin_top = 4
-theme_override_constants/margin_right = 4
-theme_override_constants/margin_bottom = 4
-
-[node name="NotificationList" type="VBoxContainer" parent="NotificationLayer/NotificationsControl/MarginContainer" unique_id=1674012328]
-unique_name_in_owner = true
-layout_mode = 2
-mouse_filter = 2
-theme_override_constants/separation = 6
-alignment = 2
-
 [node name="ChatOverlayLayer" type="CanvasLayer" parent="." unique_id=1353566743]
 unique_name_in_owner = true
 visible = false
@@ -761,14 +643,216 @@ theme_override_styles/focus = ExtResource("12_eb6dy")
 placeholder_text = "Press [T] to type..."
 max_length = 300
 editable = false
+keep_editing_on_text_submit = true
 emoji_menu_enabled = false
 backspace_deletes_composite_character_enabled = true
 caret_blink = true
+
+[node name="ToolbarLayer" type="CanvasLayer" parent="." unique_id=303368926]
+unique_name_in_owner = true
+visible = false
+
+[node name="ToolbarRoot" type="Control" parent="ToolbarLayer" unique_id=668610770]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 66.0
+grow_horizontal = 2
+mouse_filter = 1
+script = ExtResource("4_trceg")
+
+[node name="ToolbarDimmer" type="Panel" parent="ToolbarLayer/ToolbarRoot" unique_id=237439607]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 1.0
+offset_top = 1.0
+offset_right = -1.0
+offset_bottom = -11.0
+grow_horizontal = 2
+grow_vertical = 2
+offset_transform_position = Vector2(1, 1)
+offset_transform_visual_only = false
+mouse_filter = 2
+theme = ExtResource("2_sugp2")
+
+[node name="PanelContainer" type="PanelContainer" parent="ToolbarLayer/ToolbarRoot" unique_id=335515382]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 56.0
+grow_horizontal = 2
+mouse_filter = 1
+theme_override_styles/panel = ExtResource("10_muem4")
+
+[node name="ToolbarMargin" type="MarginContainer" parent="ToolbarLayer/ToolbarRoot/PanelContainer" unique_id=2147472911]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="ToolbarItems" type="HBoxContainer" parent="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin" unique_id=115529968]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Left" type="HBoxContainer" parent="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems" unique_id=2102926592]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+
+[node name="ReconnectButton" type="TextureButton" parent="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems/Left" unique_id=616891564]
+unique_name_in_owner = true
+clip_children = 1
+layout_mode = 2
+mouse_filter = 1
+texture_normal = ExtResource("5_jkv2x")
+texture_disabled = ExtResource("15_y6deb")
+
+[node name="SysGradient" type="Panel" parent="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems/Left/ReconnectButton" unique_id=13244226]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("7_gqmmt")
+
+[node name="ChatToggle" type="TextureButton" parent="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems/Left" unique_id=845300651]
+unique_name_in_owner = true
+clip_children = 1
+layout_mode = 2
+mouse_filter = 1
+toggle_mode = true
+button_pressed = true
+texture_normal = ExtResource("17_og1vs")
+texture_pressed = ExtResource("21_og1vs")
+texture_disabled = ExtResource("17_og1vs")
+
+[node name="SysGradient" type="Panel" parent="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems/Left/ChatToggle" unique_id=805459203]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("7_gqmmt")
+
+[node name="ScreenshotButton" type="TextureButton" parent="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems/Left" unique_id=1348889483]
+unique_name_in_owner = true
+clip_children = 1
+layout_mode = 2
+mouse_filter = 1
+texture_normal = ExtResource("22_2wyq8")
+
+[node name="SysGradient" type="Panel" parent="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems/Left/ScreenshotButton" unique_id=557491953]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("7_gqmmt")
+
+[node name="Right" type="HBoxContainer" parent="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems" unique_id=108836944]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 6
+alignment = 2
+
+[node name="SettingsButton" type="TextureButton" parent="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems/Right" unique_id=2094607742]
+unique_name_in_owner = true
+clip_children = 1
+layout_mode = 2
+mouse_filter = 1
+toggle_mode = true
+texture_normal = ExtResource("16_jscy8")
+
+[node name="SysGradient" type="Panel" parent="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems/Right/SettingsButton" unique_id=1006657025]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("7_gqmmt")
+
+[node name="FullscreenButton" type="TextureButton" parent="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems/Right" unique_id=2122618068]
+unique_name_in_owner = true
+clip_children = 1
+layout_mode = 2
+mouse_filter = 1
+toggle_mode = true
+texture_normal = ExtResource("12_jbj1t")
+
+[node name="SysGradient" type="Panel" parent="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems/Right/FullscreenButton" unique_id=50032423]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme = ExtResource("7_gqmmt")
+
+[node name="ScreenOverlayLayer" type="CanvasLayer" parent="." unique_id=1033786408]
+unique_name_in_owner = true
+
+[node name="InGameSettings" parent="ScreenOverlayLayer" unique_id=2086365338 instance=ExtResource("24_og1vs")]
+unique_name_in_owner = true
+visible = false
+
+[node name="NotificationLayer" type="CanvasLayer" parent="." unique_id=1391604931]
+unique_name_in_owner = true
+
+[node name="NotificationsControl" type="Control" parent="NotificationLayer" unique_id=41663212]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("18_dp3eg")
+
+[node name="MarginContainer" type="MarginContainer" parent="NotificationLayer/NotificationsControl" unique_id=17299097]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="NotificationList" type="VBoxContainer" parent="NotificationLayer/NotificationsControl/MarginContainer" unique_id=1674012328]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 6
+alignment = 2
 
 [connection signal="resolution_changed" from="RPGMakerPlayer" to="RPGMakerPlayer" method="_on_resolution_changed"]
 [connection signal="item_selected" from="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen/SetupControls/GameOptions/MarginContainer/PanelContainer/VBoxContainer/MarginContainer/VBoxContainer/WindowScale" to="GodotMenuLayer/SubViewportContainer/SubViewport/SetupScreen" method="_on_window_scale_changed"]
 [connection signal="mouse_entered" from="ToolbarLayer/ToolbarRoot" to="ToolbarLayer/ToolbarRoot" method="_on_mouse_entered"]
 [connection signal="mouse_exited" from="ToolbarLayer/ToolbarRoot" to="ToolbarLayer/ToolbarRoot" method="_on_mouse_exited"]
-[connection signal="pressed" from="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems/ReconnectButton" to="ToolbarLayer/ToolbarRoot" method="_on_reconnect_button_pressed"]
-[connection signal="toggled" from="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems/ChatToggle" to="ToolbarLayer/ToolbarRoot" method="_on_chat_toggle_toggled"]
-[connection signal="toggled" from="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems/FullscreenButton" to="ToolbarLayer/ToolbarRoot" method="_on_fullscreen_toggled"]
+[connection signal="pressed" from="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems/Left/ReconnectButton" to="ToolbarLayer/ToolbarRoot" method="_on_reconnect_button_pressed"]
+[connection signal="toggled" from="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems/Left/ChatToggle" to="ToolbarLayer/ToolbarRoot" method="_on_chat_toggle_toggled"]
+[connection signal="pressed" from="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems/Left/ScreenshotButton" to="ToolbarLayer/ToolbarRoot" method="_on_screenshot_button_pressed"]
+[connection signal="pressed" from="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems/Right/SettingsButton" to="ToolbarLayer/ToolbarRoot" method="_on_settings_button_pressed"]
+[connection signal="toggled" from="ToolbarLayer/ToolbarRoot/PanelContainer/ToolbarMargin/ToolbarItems/Right/FullscreenButton" to="ToolbarLayer/ToolbarRoot" method="_on_fullscreen_toggled"]

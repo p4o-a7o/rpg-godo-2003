@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dcw31o6ckjsa3"
-path="res://.godot/imported/orchidmantis_system_celestial.png-0367f1757000aec3aefe080ac2741a1c.ctex"
+uid="uid://br4y6pwuqmyjo"
+path="res://.godot/imported/fullscreenv232x.png-c12e9e1ff65582238208bc46d2969f33.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://resources/orchidmantis_system_celestial.png"
-dest_files=["res://.godot/imported/orchidmantis_system_celestial.png-0367f1757000aec3aefe080ac2741a1c.ctex"]
+source_file="res://resources/img/fullscreenv232x.png"
+dest_files=["res://.godot/imported/fullscreenv232x.png-c12e9e1ff65582238208bc46d2969f33.ctex"]
 
 [params]
 

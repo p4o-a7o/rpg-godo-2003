@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dkxvjakmi0a3l"
-path="res://.godot/imported/close16x.png-4032a0d7b73c2758f930f7babf5c9ed2.ctex"
+uid="uid://d0gdao1sxiwak"
+path="res://.godot/imported/chat-on-flat.png-9912f9191880e47c33a6d19d428004e3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://resources/close16x.png"
-dest_files=["res://.godot/imported/close16x.png-4032a0d7b73c2758f930f7babf5c9ed2.ctex"]
+source_file="res://resources/img/chat-on-flat.png"
+dest_files=["res://.godot/imported/chat-on-flat.png-9912f9191880e47c33a6d19d428004e3.ctex"]
 
 [params]
 

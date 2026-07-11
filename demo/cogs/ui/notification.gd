@@ -54,7 +54,6 @@ func _ready() -> void:
 		.set_trans(Tween.TRANS_CUBIC) \
 		.set_ease(Tween.EASE_OUT)
 	_close_button.pressed.connect(_on_close_button_pressed)
-	self.pressed.connect(_on_notification_clicked)
 	_notification_timer.timeout.connect(_on_notification_expire)
 	self.mouse_entered.connect(_on_mouse_entered)
 	self.mouse_exited.connect(_on_mouse_exited)
@@ -67,9 +66,9 @@ func _process(delta: float) -> void:
 		return
 	_progress_bar.scale.x = _notification_timer.time_left / _notification_timer.wait_time
 
-# honestly why not just make it close when you click
-# on the notification period, probably less annoying
-# to have to snipe the X button
+# FIXME this does nothing because you cant click on a panel container
+# i need the thing to be resizable and still be clickable and hoverable
+# and all of that shit
 func _on_notification_clicked() -> void:
 	_on_close_button_pressed()
 
