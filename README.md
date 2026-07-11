@@ -1,5 +1,10 @@
 ## RPGGodo2003
 
+**Multiplayer (via Steamworks P2P) EasyRPG player, embedded in Godot**
+> [!IMPORTANT]
+> This is an experimental version of BdEgh's multiplayer app, which uses Steamworks Networking Sockets API for peer-to-peer connectivity.
+> Some multiplayer functionality may misbehave!
+
 made so you can always play ynfg with someone else
 
 (i want cu so bad)
